@@ -2,7 +2,7 @@
 
 > **The UPC Barcode System for AI-Native Codebases.**
 
-`saayn` is a high-integrity, sovereign CLI tool designed to orchestrate the relationship between human intent and AI execution. It enforces a **Zero-Trust Chunking Architecture**—treating your source files as collections of cryptographically verified "logical units" to eliminate AI hallucinations, collateral damage, and feature drift.
+`saayn` is a high-integrity, sovereign CLI tool designed to orchestrate the relationship between human intent and AI execution. It enforces a **Zero-Trust Chunking Architecture**, treating your source files as collections of cryptographically verified "logical units" to eliminate AI hallucinations, collateral damage, and feature drift.
 
 ### The Philosophy: "Precision over Context"
 
