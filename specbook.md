@@ -180,7 +180,3 @@ SAAYN treats the LLM as a raw logic provider.
 * **`saayn undo`**: Rollback the last successful operation.
 * **`saayn reconcile`**: Manually sync the registry to the current disk state (Human-in-the-loop).
 
----
-
-### Implementation Next Step
-Would you like me to **draft the initial `chunk-registry.json` schema and a sample `Change Proposal` (v1.0) JSON** based on these rules to serve as your test fixtures?
