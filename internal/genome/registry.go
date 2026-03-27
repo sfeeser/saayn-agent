@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"go/ast"
+	_ "go/ast"
 	"go/printer"
-	"go/token"
+	_ "go/token"
 	"os"
 	"regexp"
 	"strings"
@@ -23,51 +23,67 @@ type RegistryManager struct {
 }
 
 // NewRegistry initializes a new registry from scanned nodes
-func NewRegistry(scannedNodes []model.Node, path string) *RegistryManager {
+func NewRegistry(scannedNodes []*model.Node, path string) *RegistryManager {
 	reg := &model.Registry{
 		ProjectName: "CGS-Project",
 		Nodes:       make(map[string]model.Node),
 	}
 
+	rm := &RegistryManager{Registry: reg, FilePath: path}
+
+	// n is already a *model.Node (a pointer), so no need for &scannedNodes[i]
+
 	for _, n := range scannedNodes {
-		// Generate stable internal identity
 		id := uuid.New().String()
 		n.UUID = id
+
+		// Pass the WHOLE node 'n', not just n.AST
+		if n.AST != nil {
+			n.LogicHash = rm.NormalizeAndHash(n)
+		}
+
 		n.Version = 1
 		n.LastModified = time.Now()
-		
-		reg.Nodes[id] = n
+		reg.Nodes[id] = *n
 	}
 
-	return &RegistryManager{
-		Registry: reg,
-		FilePath: path,
-	}
+	return rm
 }
 
 // NormalizeAndHash turns a function body into a stable LogicHash
-func (rm *RegistryManager) NormalizeAndHash(fn *ast.FuncDecl) string {
-	fset := token.NewFileSet()
-	var buf strings.Builder
+// NormalizeAndHash turns a function body into a stable LogicHash
+// NormalizeAndHash turns a function body into a stable LogicHash
+func (rm *RegistryManager) NormalizeAndHash(n *model.Node) string {
+	if n.AST == nil || n.Fset == nil {
+		return ""
+	}
 
-	// 1. Strip comments and render AST to string
-	// We use a config that ignores comments during printing
+	var buf strings.Builder
 	conf := &printer.Config{Mode: printer.RawFormat, Tabwidth: 8}
-	conf.Fprint(&buf, fset, fn.Body)
+	if err := conf.Fprint(&buf, n.Fset, n.AST.Body); err != nil {
+		return ""
+	}
 
 	body := buf.String()
 
-	// 2. Normalize Whitespace (Collapse all to single spaces)
-	reWhitespace := regexp.MustCompile(`\s+`)
-	body = reWhitespace.ReplaceAllString(body, " ")
-
-	// 3. Anonymize Local Identifiers (Phase 1: Simple cleanup)
-	// Future versions will implement the v1, v2 mapping here
+	// COLLAPSE WHITESPACE
+	re := regexp.MustCompile(`\s+`)
+	body = re.ReplaceAllString(body, " ")
 	body = strings.TrimSpace(body)
 
-	// 4. Generate SHA-256
+	// CALCULATE HASH
 	hash := sha256.Sum256([]byte(body))
-	return fmt.Sprintf("%x", hash)
+
+	// Create the hash string HERE so the printer and the return can both use it
+	hashStr := fmt.Sprintf("%x", hash)
+
+	// 💅 THE PRETTY PRINT
+	// If the hash is empty (shouldn't happen here, but just in case), protect the slice
+	if len(hashStr) >= 8 {
+		fmt.Printf("  🧬 Indexed %-45s [%s]\n", n.PublicID, hashStr[:8])
+	}
+
+	return hashStr
 }
 
 // Save persists the registry to the genome.json file

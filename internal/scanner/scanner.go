@@ -13,35 +13,34 @@ import (
 )
 
 // FullScan walks the directory and extracts all functional nodes
-func FullScan(root string) ([]model.Node, error) {
-	var nodes []model.Node
-	fset := token.NewFileSet()
+// 1. Change the return type to a slice of POINTERS []*model.Node
+func FullScan(root string) ([]*model.Node, error) {
+	var nodes []*model.Node
+	fset := token.NewFileSet() // This is the "Coordinate Map" for the whole scan
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") {
 			return err
 		}
 
-		// 1. Parse the Go file into an AST
+		// Parse the file using the shared fset
 		f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
 		if err != nil {
-			return nil // Skip files that don't parse (broken code)
+			return nil
 		}
 
-		// 2. Extract the Package Name
 		pkgName := f.Name.Name
 
-		// 3. Inspect the AST for Declarations
 		ast.Inspect(f, func(n ast.Node) bool {
 			fn, ok := n.(*ast.FuncDecl)
 			if !ok {
-				return true // Keep looking for functions
+				return true
 			}
 
-			// 4. Build the Semantic Identity (The DNA Address)
-			node := extractNodeMetadata(pkgName, fn)
-			nodes = append(nodes, node)
-			
+			// Pass the 'path' variable from the WalkDir loop into the helper
+			newNode := extractNodeMetadata(pkgName, path, fn, fset)
+			nodes = append(nodes, newNode)
+
 			return true
 		})
 
@@ -52,10 +51,9 @@ func FullScan(root string) ([]model.Node, error) {
 }
 
 // extractNodeMetadata turns a raw AST function into a CGS Node
-func extractNodeMetadata(pkg string, fn *ast.FuncDecl) model.Node {
+func extractNodeMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *token.FileSet) *model.Node {
 	receiver := ""
 	if fn.Recv != nil && len(fn.Recv.List) > 0 {
-		// It's a method. Extract the receiver type (e.g., "*Service")
 		switch t := fn.Recv.List[0].Type.(type) {
 		case *ast.StarExpr:
 			receiver = fmt.Sprintf("*%v", t.X)
@@ -64,15 +62,19 @@ func extractNodeMetadata(pkg string, fn *ast.FuncDecl) model.Node {
 		}
 	}
 
-	// Format: package.Receiver.Name
 	identity := pkg
 	if receiver != "" {
 		identity += "." + receiver
 	}
 	identity += "." + fn.Name.Name
 
-	return model.Node{
-		PublicID: identity,
-		// Note: LogicHash and Fingerprint will be generated in the Genome package
+	// 🚨 THE FIX: Append the filename so multiple init() functions don't collide
+	fileName := filepath.Base(filePath)
+	uniqueID := fmt.Sprintf("%s[%s]", identity, fileName)
+
+	return &model.Node{
+		PublicID: uniqueID,
+		AST:      fn,
+		Fset:     fset,
 	}
 }

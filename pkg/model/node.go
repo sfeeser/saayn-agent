@@ -1,6 +1,10 @@
 package model
 
-import "time"
+import (
+	"go/ast"
+	"go/token"
+	"time"
+)
 
 // Node represents a single "Twig" in the Code Genome System.
 // It is the atomic unit of mutation and identity.
@@ -32,6 +36,9 @@ type Node struct {
 	BusinessPurpose string    `json:"business_purpose"`
 	LastModified    time.Time `json:"last_modified"`
 	Version         int       `json:"version"`
+	// 🧬 The "Live" AST Twig (Memory only)
+	AST  *ast.FuncDecl  `json:"-"`
+	Fset *token.FileSet `json:"-"`
 }
 
 // DependencyMap categorizes how a node interacts with the rest of the system.

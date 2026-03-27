@@ -1,14 +1,11 @@
 package saayn
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
 var (
-	genomeFile string
+	genomeFile  string
 	projectRoot string
 )
 
