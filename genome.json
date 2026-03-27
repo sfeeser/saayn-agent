@@ -1,0 +1,15 @@
+{
+  "project": "saayn-core",
+  "nodes": {
+    "uuid-88b2-11ef": {
+      "public_id": "billing.Service.CalculateFees(float64)->float64",
+      "fingerprint": "88a12bc...", 
+      "logic_hash": "0xA81F...",
+      "dependencies": {
+        "calls": ["math.Round"],
+        "reads": ["config.FeeRate"]
+      },
+      "intent": "Calculates cross-border transaction costs per Spec v1.8"
+    }
+  }
+}
