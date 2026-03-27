@@ -2,7 +2,6 @@ package validator
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"strings"
 )
@@ -20,9 +19,9 @@ func CheckIntegrity(projectRoot string) (*Result, error) {
 		return res, nil
 	}
 
-	// 2. Run 'go build' to ensure the code actually compiles
-	// We use -o /dev/null (or equivalent) because we don't need the binary, just the result
-	if res := runCommand(projectRoot, "go", "build", "-o", "temp_build_bin", "./..."); !res.Success {
+	// 2. Run 'go build' to ensure the code actually compiles.
+	// Removing the '-o' flag allows Go to validate multiple packages safely.
+	if res := runCommand(projectRoot, "go", "build", "./..."); !res.Success {
 		return res, nil
 	}
 
@@ -39,7 +38,7 @@ func runCommand(dir string, name string, args ...string) *Result {
 	cmd.Stderr = &out
 
 	err := cmd.Run()
-	
+
 	return &Result{
 		Success: err == nil,
 		Output:  out.String(),

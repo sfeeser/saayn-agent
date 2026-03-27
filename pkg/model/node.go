@@ -54,3 +54,10 @@ type Registry struct {
 	RootPath    string          `json:"root_path"`
 	Nodes       map[string]Node `json:"nodes"` // Keyed by UUID
 }
+
+type SurgeryRequest struct {
+	TargetUUID  string
+	NewLogic    string    // The raw string of the new code block
+	Registry    *Registry // So the surgeon can look up the PublicID/Path
+	ProjectRoot string
+}

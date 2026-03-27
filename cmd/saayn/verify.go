@@ -77,6 +77,8 @@ var verifyCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(verifyCmd)
+	rootCmd.
+		AddCommand(verifyCmd)
 	verifyCmd.Flags().StringP("path", "p", ".", "Path to the project root")
+	fmt.Println("This was injected by the SAAYN Surgeon!")
 }

@@ -2,120 +2,8 @@
   "project_name": "CGS-Project",
   "root_path": "",
   "nodes": {
-    "07d81a8f-991e-49d7-b02d-59f1f0801fd3": {
-      "uuid": "07d81a8f-991e-49d7-b02d-59f1f0801fd3",
-      "public_id": "saayn.Execute[root.go]",
-      "fingerprint": "",
-      "logic_hash": "21f865854674feb3df81dd79d8c234e686cc52c2ac288a0ce9a8825de4e207a9",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.117886841-04:00",
-      "version": 1
-    },
-    "0d042b24-cc03-43a9-bb6c-bebe79f4fe5f": {
-      "uuid": "0d042b24-cc03-43a9-bb6c-bebe79f4fe5f",
-      "public_id": "scanner.extractNodeMetadata[scanner.go]",
-      "fingerprint": "",
-      "logic_hash": "2ea9e4e18554058a34c363e323fbbd872fe0aa1da69939bf4468e3ff26aab14b",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118637115-04:00",
-      "version": 1
-    },
-    "0edbde5d-f455-42cf-9031-d753e874bf07": {
-      "uuid": "0edbde5d-f455-42cf-9031-d753e874bf07",
-      "public_id": "validator.*Result.ParseError[validator.go]",
-      "fingerprint": "",
-      "logic_hash": "0fb766892ac0602f5d8b912769c6d3b0e4a8335290a9f8269072b85853d35080",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118988052-04:00",
-      "version": 1
-    },
-    "1ab8321a-9796-496a-acf4-a5b93cf9cd6e": {
-      "uuid": "1ab8321a-9796-496a-acf4-a5b93cf9cd6e",
-      "public_id": "validator.CheckIntegrity[validator.go]",
-      "fingerprint": "",
-      "logic_hash": "2d11fd7f7bda8a36aee286ebe59ff5d989e3e52451ac88d85cf21a7fe36b886a",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118920222-04:00",
-      "version": 1
-    },
-    "5d668da5-e654-4e45-871e-77bbd0a876b1": {
-      "uuid": "5d668da5-e654-4e45-871e-77bbd0a876b1",
-      "public_id": "surgeon.PerformSurgery[surgeon.go]",
-      "fingerprint": "",
-      "logic_hash": "c3f440b8df86380f707442bc6c5b89c6f42b8728c0f3dc1a77c48c3c882be4a1",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.11882302-04:00",
-      "version": 1
-    },
-    "5e9b0ed6-47c8-4b5c-aba5-b2d75fb5ff31": {
-      "uuid": "5e9b0ed6-47c8-4b5c-aba5-b2d75fb5ff31",
-      "public_id": "surgeon.resolvePathFromIdentity[surgeon.go]",
-      "fingerprint": "",
-      "logic_hash": "fb4eb01498c0433dbcc88fb25e60faa2bd01431721a241b3f3b32a084886d20a",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118862272-04:00",
-      "version": 1
-    },
-    "6c294d42-76cc-464d-9f05-7d59b9321b56": {
-      "uuid": "6c294d42-76cc-464d-9f05-7d59b9321b56",
-      "public_id": "saayn.init[verify.go]",
-      "fingerprint": "",
-      "logic_hash": "f732addacc68d59d65a52497ff376966d171906e0ff6ef0729c9c6e4e675d5f1",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118015837-04:00",
-      "version": 1
-    },
-    "786575ab-90ca-4e52-a219-f085e25bfd46": {
-      "uuid": "786575ab-90ca-4e52-a219-f085e25bfd46",
-      "public_id": "saayn.init[init.go]",
-      "fingerprint": "",
-      "logic_hash": "b301537c5e5111dcf9732c5f268f74dddc117a3ce76bdea50e8a2bf613d02f64",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.117822547-04:00",
-      "version": 1
-    },
-    "870028aa-3a7e-41b9-a142-73a93d6d6b79": {
-      "uuid": "870028aa-3a7e-41b9-a142-73a93d6d6b79",
+    "0ab85f97-2e14-44ad-b3b7-6cb9f42a4b5c": {
+      "uuid": "0ab85f97-2e14-44ad-b3b7-6cb9f42a4b5c",
       "public_id": "scanner.FullScan[scanner.go]",
       "fingerprint": "",
       "logic_hash": "6beb9e383b15c065afa868fb9458b69117639dbf1ae3b91770464f8766498db8",
@@ -125,53 +13,11 @@
         "writes": null
       },
       "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118544499-04:00",
+      "last_modified": "2026-03-27T06:30:24.687504148-04:00",
       "version": 1
     },
-    "908d3137-a5f7-4547-97c4-94b2c56181ba": {
-      "uuid": "908d3137-a5f7-4547-97c4-94b2c56181ba",
-      "public_id": "validator.runCommand[validator.go]",
-      "fingerprint": "",
-      "logic_hash": "18ad0bf7e08f3475a9083540da8a9259ecaaaf09cfeac7b11315e1b36e9c1a55",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118968318-04:00",
-      "version": 1
-    },
-    "b518ce8f-4dda-4e01-a7cb-ddb771f61256": {
-      "uuid": "b518ce8f-4dda-4e01-a7cb-ddb771f61256",
-      "public_id": "main.main[main.go]",
-      "fingerprint": "",
-      "logic_hash": "dcd6c4c41dcc6a1d47e57a46dc2d8452c64a9ea145ef0a16576f499a07f3135c",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.119004749-04:00",
-      "version": 1
-    },
-    "c6ac91fd-acee-4dcc-8a6d-a4280e68477f": {
-      "uuid": "c6ac91fd-acee-4dcc-8a6d-a4280e68477f",
-      "public_id": "genome.*RegistryManager.NormalizeAndHash[registry.go]",
-      "fingerprint": "",
-      "logic_hash": "ace4278434ff25ee66e3d107098633deee00dda43ca59824125da8932d11f438",
-      "dependencies": {
-        "calls": null,
-        "reads": null,
-        "writes": null
-      },
-      "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118213107-04:00",
-      "version": 1
-    },
-    "c9705bf8-90d5-43f2-bd36-af06c49f8876": {
-      "uuid": "c9705bf8-90d5-43f2-bd36-af06c49f8876",
+    "0cf1f65e-cbf9-4456-bed8-a5174babd9a0": {
+      "uuid": "0cf1f65e-cbf9-4456-bed8-a5174babd9a0",
       "public_id": "genome.*RegistryManager.Save[registry.go]",
       "fingerprint": "",
       "logic_hash": "d8eca5f05e3cbe4d1c16a5e6bb7a77cda471cc0cdf28dc6492de54b7357121bb",
@@ -181,11 +27,11 @@
         "writes": null
       },
       "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118255716-04:00",
+      "last_modified": "2026-03-27T06:30:24.687318468-04:00",
       "version": 1
     },
-    "cab8ebdb-a4b6-4ace-8a29-87e5254cf4e1": {
-      "uuid": "cab8ebdb-a4b6-4ace-8a29-87e5254cf4e1",
+    "122f66ba-139e-478a-987b-3717b8363b4c": {
+      "uuid": "122f66ba-139e-478a-987b-3717b8363b4c",
       "public_id": "genome.Load[registry.go]",
       "fingerprint": "",
       "logic_hash": "5c9cbc21b390469527fa1412188036b1060ecb51c55c430631344d159c90e235",
@@ -195,25 +41,25 @@
         "writes": null
       },
       "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.11831849-04:00",
+      "last_modified": "2026-03-27T06:30:24.687360865-04:00",
       "version": 1
     },
-    "da5eb793-d812-49d4-b72c-083da13e97dc": {
-      "uuid": "da5eb793-d812-49d4-b72c-083da13e97dc",
-      "public_id": "surgeon.getIdentity[surgeon.go]",
+    "2c983655-14d0-4e2f-a8da-010b9fcd2de2": {
+      "uuid": "2c983655-14d0-4e2f-a8da-010b9fcd2de2",
+      "public_id": "saayn.Execute[root.go]",
       "fingerprint": "",
-      "logic_hash": "2030caf00acbfdf0cae90ca82de6ec3252c2616b4a2cb72d78e05478dd8a74f2",
+      "logic_hash": "21f865854674feb3df81dd79d8c234e686cc52c2ac288a0ce9a8825de4e207a9",
       "dependencies": {
         "calls": null,
         "reads": null,
         "writes": null
       },
       "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118840574-04:00",
+      "last_modified": "2026-03-27T06:30:24.687073799-04:00",
       "version": 1
     },
-    "df1c0624-47d8-4c62-b36e-50f5fbb55277": {
-      "uuid": "df1c0624-47d8-4c62-b36e-50f5fbb55277",
+    "305a9717-8ec3-4eba-9d99-7b51f517ace2": {
+      "uuid": "305a9717-8ec3-4eba-9d99-7b51f517ace2",
       "public_id": "genome.NewRegistry[registry.go]",
       "fingerprint": "",
       "logic_hash": "74d5100dd28522997c4e4a4b5dfe16d9d113d6d5dd3f5f8787ea12acaf922a33",
@@ -223,11 +69,53 @@
         "writes": null
       },
       "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.118117959-04:00",
+      "last_modified": "2026-03-27T06:30:24.687227699-04:00",
       "version": 1
     },
-    "dfef153e-36b3-443d-8128-97cfc9ab1da5": {
-      "uuid": "dfef153e-36b3-443d-8128-97cfc9ab1da5",
+    "39a1ca29-036a-465c-b6bd-37ade930a383": {
+      "uuid": "39a1ca29-036a-465c-b6bd-37ade930a383",
+      "public_id": "validator.*Result.ParseError[validator.go]",
+      "fingerprint": "",
+      "logic_hash": "0fb766892ac0602f5d8b912769c6d3b0e4a8335290a9f8269072b85853d35080",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687969423-04:00",
+      "version": 1
+    },
+    "3c88725d-9052-4e32-ab5d-8a2ff1e6465d": {
+      "uuid": "3c88725d-9052-4e32-ab5d-8a2ff1e6465d",
+      "public_id": "main.main[main.go]",
+      "fingerprint": "",
+      "logic_hash": "dcd6c4c41dcc6a1d47e57a46dc2d8452c64a9ea145ef0a16576f499a07f3135c",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687997084-04:00",
+      "version": 1
+    },
+    "5cfdb97d-7d5e-4e4c-9597-eb31045fb785": {
+      "uuid": "5cfdb97d-7d5e-4e4c-9597-eb31045fb785",
+      "public_id": "scanner.extractNodeMetadata[scanner.go]",
+      "fingerprint": "",
+      "logic_hash": "2ea9e4e18554058a34c363e323fbbd872fe0aa1da69939bf4468e3ff26aab14b",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687564381-04:00",
+      "version": 1
+    },
+    "627edc1b-2b1b-4cc5-ab81-c174c0346d23": {
+      "uuid": "627edc1b-2b1b-4cc5-ab81-c174c0346d23",
       "public_id": "saayn.init[root.go]",
       "fingerprint": "",
       "logic_hash": "90d447deacda1245dc855f5c35e0341f43fca828651ccee39811d43b3194c69e",
@@ -237,7 +125,133 @@
         "writes": null
       },
       "business_purpose": "",
-      "last_modified": "2026-03-27T05:50:40.117965909-04:00",
+      "last_modified": "2026-03-27T06:30:24.687102988-04:00",
+      "version": 1
+    },
+    "783df501-fff5-44e5-8a26-5dc19465e2dc": {
+      "uuid": "783df501-fff5-44e5-8a26-5dc19465e2dc",
+      "public_id": "saayn.init[init.go]",
+      "fingerprint": "",
+      "logic_hash": "b301537c5e5111dcf9732c5f268f74dddc117a3ce76bdea50e8a2bf613d02f64",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687033632-04:00",
+      "version": 1
+    },
+    "7baf7e3c-1780-45c6-97b6-1bfcce6e39dc": {
+      "uuid": "7baf7e3c-1780-45c6-97b6-1bfcce6e39dc",
+      "public_id": "validator.CheckIntegrity[validator.go]",
+      "fingerprint": "",
+      "logic_hash": "e515836845be8e44952a1fd58d7d855b5c0857d7daa1e526a6bd37e5a5738272",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687920955-04:00",
+      "version": 1
+    },
+    "89d451f2-61a7-4ed9-8dd3-6f33e2348151": {
+      "uuid": "89d451f2-61a7-4ed9-8dd3-6f33e2348151",
+      "public_id": "saayn.init[verify.go]",
+      "fingerprint": "",
+      "logic_hash": "0a92819bed1eab3d8cec4edf43adc0d2f2da3e4cab079ea4f281e2d8fdaf5602",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687138041-04:00",
+      "version": 1
+    },
+    "8b462d13-336e-493e-9266-171f8e0c48de": {
+      "uuid": "8b462d13-336e-493e-9266-171f8e0c48de",
+      "public_id": "genome.*RegistryManager.NormalizeAndHash[registry.go]",
+      "fingerprint": "",
+      "logic_hash": "ace4278434ff25ee66e3d107098633deee00dda43ca59824125da8932d11f438",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687298277-04:00",
+      "version": 1
+    },
+    "a7c0eee4-cb3f-47b6-b2a2-f842f1df9b63": {
+      "uuid": "a7c0eee4-cb3f-47b6-b2a2-f842f1df9b63",
+      "public_id": "validator.runCommand[validator.go]",
+      "fingerprint": "",
+      "logic_hash": "18ad0bf7e08f3475a9083540da8a9259ecaaaf09cfeac7b11315e1b36e9c1a55",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687956939-04:00",
+      "version": 1
+    },
+    "b514d9d4-4a6b-47ff-9495-dc61f982ed8f": {
+      "uuid": "b514d9d4-4a6b-47ff-9495-dc61f982ed8f",
+      "public_id": "surgeon.findFileForNode[surgeon.go]",
+      "fingerprint": "",
+      "logic_hash": "8dc2633b3230100225e6411eb6436ed8b34cf029b01dbca5fa113e25759cd526",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687895031-04:00",
+      "version": 1
+    },
+    "c0493143-7c89-4448-a4c8-1d39a9be75c6": {
+      "uuid": "c0493143-7c89-4448-a4c8-1d39a9be75c6",
+      "public_id": "saayn.init[edit.go]",
+      "fingerprint": "",
+      "logic_hash": "fe649dfcd33baa693871ceef2cd0b62c91c51afd7dfba3257a716bd63b211a48",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687010666-04:00",
+      "version": 1
+    },
+    "dea3a10c-98c8-4b25-af68-acf06313a927": {
+      "uuid": "dea3a10c-98c8-4b25-af68-acf06313a927",
+      "public_id": "surgeon.extractIdentity[surgeon.go]",
+      "fingerprint": "",
+      "logic_hash": "6f19204037061f47efcaa97b0200cc09321ebec2318e69733108d0224386781a",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687781633-04:00",
+      "version": 1
+    },
+    "eea014ca-7926-4275-8bbf-d1471b269633": {
+      "uuid": "eea014ca-7926-4275-8bbf-d1471b269633",
+      "public_id": "surgeon.PerformSurgery[surgeon.go]",
+      "fingerprint": "",
+      "logic_hash": "eec01f6b958de124d4b417257cbc9195d402f1f2007367d88816e917f07ecdd4",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "",
+      "last_modified": "2026-03-27T06:30:24.687740113-04:00",
       "version": 1
     }
   }
