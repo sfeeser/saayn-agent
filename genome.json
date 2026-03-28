@@ -12,7 +12,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function systematically scans a given directory to discover and parse all Go function declarations within the codebase. It generates the fundamental \"functional nodes\" that constitute the initial raw data for SAAYN's code genome analysis and representation.",
       "last_modified": "2026-03-27T06:30:24.687504148-04:00",
       "version": 1
     },
@@ -26,7 +26,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function persists the SAAYN agent's in-memory code genome registry to a file, ensuring its critical understanding and state are durably stored. This allows the agent to maintain its definition across application runs, providing persistence and resilience for the code genome.",
       "last_modified": "2026-03-27T06:30:24.687318468-04:00",
       "version": 1
     },
@@ -40,7 +40,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function retrieves a previously saved genomic registry from disk, enabling the SAAYN system to load and utilize existing registry configurations. It provides the core capability to persist and restore the state of the code genome registry across application runs.",
       "last_modified": "2026-03-27T06:30:24.687360865-04:00",
       "version": 1
     },
@@ -54,7 +54,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "It serves as the primary entry point for the SAAYN agent's command-line interface, consolidating all sub-commands and their configurations. This enables the system to correctly parse user-issued commands, execute the intended operations, and provides the fundamental control mechanism for the agent.",
       "last_modified": "2026-03-27T06:30:24.687073799-04:00",
       "version": 1
     },
@@ -68,7 +68,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function initializes and populates the central registry that houses all processed code nodes, assigning unique identifiers and computing their logic hashes. It provides SAAYN with a structured, versioned, and uniquely identified collection of code elements, forming the foundational \"code genome\" for deeper analysis and management.",
       "last_modified": "2026-03-27T06:30:24.687227699-04:00",
       "version": 1
     },
@@ -82,7 +82,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function processes failed validation results to extract and clean raw compiler output, providing the SAAYN AI with precise and untainted error messages. Its purpose is to ensure the AI receives clear, actionable feedback for learning and improving code generation.",
       "last_modified": "2026-03-27T06:30:24.687969423-04:00",
       "version": 1
     },
@@ -96,7 +96,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function serves as the primary entry point for the SAAYN autonomous Code Genome Agent, initiating and controlling the execution of its core operational workflow. It ensures the SAAYN system performs its designated tasks and handles any critical failures gracefully.",
       "last_modified": "2026-03-27T06:30:24.687997084-04:00",
       "version": 1
     },
@@ -110,7 +110,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function transforms raw Go Abstract Syntax Tree function definitions into SAAYN's internal `model.Node` representation. It provides a standardized and uniquely identifiable node for each function, which is crucial for building and analyzing the code genome.",
       "last_modified": "2026-03-27T06:30:24.687564381-04:00",
       "version": 1
     },
@@ -124,7 +124,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function initializes SAAYN's command-line interface, defining persistent flags for critical startup parameters. It enables the agent to dynamically specify the location of its Code Genome System (CGS) registry file and the target project root directory for its code analysis operations.",
       "last_modified": "2026-03-27T06:30:24.687102988-04:00",
       "version": 1
     },
@@ -138,7 +138,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function automatically registers the 'init' command with SAAYN's command-line interface upon program startup. This enables users or automated processes to invoke the agent's initialization or setup routines directly from the command line.",
       "last_modified": "2026-03-27T06:30:24.687033632-04:00",
       "version": 1
     },
@@ -152,7 +152,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function validates a Go project's foundational health by running standard toolchain checks like `go vet` and `go build`. It ensures the codebase is syntactically correct, buildable, and free of common issues, providing a critical quality gate for SAAYN's subsequent autonomous operations.",
       "last_modified": "2026-03-27T06:30:24.687920955-04:00",
       "version": 1
     },
@@ -166,7 +166,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function integrates a \"verify\" subcommand into the SAAYN agent's command-line interface, making the verification functionality accessible. It provides the system with a direct, user- or script-invokable entry point to perform project verification on a specified path.",
       "last_modified": "2026-03-27T06:30:24.687138041-04:00",
       "version": 1
     },
@@ -180,7 +180,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function generates a stable, content-based hash for a function's logic by normalizing its source code representation. It enables the SAAYN agent to uniquely identify, track, and compare code components based on their functional essence within the code genome.",
       "last_modified": "2026-03-27T06:30:24.687298277-04:00",
       "version": 1
     },
@@ -194,7 +194,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function provides a standardized mechanism for SAAYN to execute arbitrary shell commands on the underlying system. It captures all command output and execution success, enabling other SAAYN components to interact with external tools and scripts reliably.",
       "last_modified": "2026-03-27T06:30:24.687956939-04:00",
       "version": 1
     },
@@ -208,7 +208,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function exists to precisely locate the source file for a given code artifact (function) based on its unique SAAYN identity within a project's directory structure. It enables the SAAYN agent to programmatically find and target specific code units for subsequent analysis, refactoring, or surgical modification, ensuring operations are applied to the correct source file.",
       "last_modified": "2026-03-27T06:30:24.687895031-04:00",
       "version": 1
     },
@@ -222,7 +222,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function initializes the 'edit' command within SAAYN's command-line interface, enabling specification of which code node to modify and with what new code. It provides the core capability for directing the autonomous agent to update specific elements of the code genome.",
       "last_modified": "2026-03-27T06:30:24.687010666-04:00",
       "version": 1
     },
@@ -236,7 +236,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function generates a unique, standardized identifier string for a Go function, matching a specific internal format required by SAAYN's scanning components. It provides a consistent reference key, essential for tracking and analyzing specific functions across various stages of code genome processing and transformations.",
       "last_modified": "2026-03-27T06:30:24.687781633-04:00",
       "version": 1
     },
@@ -250,7 +250,7 @@
         "reads": null,
         "writes": null
       },
-      "business_purpose": "",
+      "business_purpose": "This function enables SAAYN to autonomously modify specific code functions within a project by replacing their logic with new instructions. It ensures the integrity of these changes through automatic validation and rollback, providing a core mechanism for SAAYN's code evolution capabilities.",
       "last_modified": "2026-03-27T06:30:24.687740113-04:00",
       "version": 1
     }

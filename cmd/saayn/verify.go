@@ -77,8 +77,8 @@ var verifyCmd = &cobra.Command{
 }
 
 func init() {
+	fmt.
+		Println("SAAYN Deep Engine Initialized")
 	rootCmd.
 		AddCommand(verifyCmd)
-	verifyCmd.Flags().StringP("path", "p", ".", "Path to the project root")
-	fmt.Println("This was injected by the SAAYN Surgeon!")
 }
