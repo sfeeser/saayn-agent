@@ -78,6 +78,7 @@ var verifyCmd = &cobra.Command{
 
 func init() {
 	fmt.
-		Println("Medical History Online")
-	rootCmd.AddCommand(verifyCmd)
+		Println("Enterprise Git Formatting Online")
+	rootCmd.
+		AddCommand(verifyCmd)
 }

@@ -21,9 +21,10 @@ import (
 
 // AgentResponse is the strict JSON format the LLM must return
 type AgentResponse struct {
-	Rationale  string `json:"rationale"`
-	TargetUUID string `json:"target_uuid"`
-	NewCode    string `json:"new_code"`
+	TargetUUID  string `json:"target_uuid"`
+	NewCode     string `json:"new_code"`
+	Rationale   string `json:"rationale"`
+	CommitTitle string `json:"commit_title"` // <-- Add this new field!
 }
 
 var askCmd = &cobra.Command{
@@ -151,7 +152,26 @@ var askCmd = &cobra.Command{
 		}
 		// ---------------------------------
 
-		fmt.Println("✅ Operation Complete. Medical History updated. Run './saayn verify' to check for drift!")
+		fmt.Println("✅ Operation Complete. Medical History updated.")
+		fmt.Println("\n💾 Suggested Commit Command:")
+
+		// Fallback just in case the AI forgets the title
+		title := decision.CommitTitle
+		if title == "" {
+			title = "refactor(cgs): ai autonomous surgery"
+		}
+
+		// Create individual blocks for Git paragraphs
+		promptBlock := fmt.Sprintf("User Prompt: %s", userPrompt)
+		rationaleBlock := fmt.Sprintf("AI Rationale: %s", decision.Rationale)
+		uuidBlock := fmt.Sprintf("CGS-Target-UUID: %s", decision.TargetUUID)
+		funcBlock := fmt.Sprintf("CGS-Function: %s", targetPublicID)
+
+		// Output a safe, single-line copy-paste command using consecutive -m flags.
+		// Git will automatically insert paragraph breaks between each -m argument!
+		fmt.Printf("git commit -m %q -m %q -m %q -m %q -m %q\n",
+			title, promptBlock, rationaleBlock, uuidBlock, funcBlock)
+
 		return nil
 	},
 }
@@ -175,13 +195,15 @@ RULES:
 2. You must write the complete, raw inner body of the function (no 'func' declaration, just the inner code).
 3. Do not change the function signature, name, parameters, receiver, or return types.
 4. If the request CANNOT be satisfied by modifying exactly one existing function, return an empty string for target_uuid and new_code, and explain why in the rationale.
-5. Return your answer as a STRICT JSON object matching this schema:
+5. You must provide a 'commit_title' summarizing your change using the Conventional Commits standard (e.g., 'refactor(cgs): add medical history verification'). Keep it under 50 characters.
+6. Return your answer as a STRICT JSON object matching this schema:
 {
   "rationale": "Explain your technical decision-making process",
   "target_uuid": "The exact UUID string (or empty if refusal)",
   "new_code": "The raw Go code string (or empty if refusal)"
+  "commit_title": "refactor(module): description"
 }
-6. Do not return placeholder code, pseudocode, or markdown fences. Return ONLY the raw JSON object.`
+7. Do not return placeholder code, pseudocode, or markdown fences. Return ONLY the raw JSON object.`
 
 	fullPrompt := fmt.Sprintf("%s\n\n%s\n\nUSER REQUEST: %s", systemPrompt, codeContext, userPrompt)
 
