@@ -144,7 +144,14 @@ var askCmd = &cobra.Command{
 			return fmt.Errorf("❌ Surgery Failed: %w", err)
 		}
 
-		fmt.Println("✅ Operation Complete. Run './saayn verify' to check for drift!")
+		// --- NEW MEDICAL HISTORY LOGIC ---
+		regManager.Registry.LastMutatedUUID = decision.TargetUUID
+		if err := regManager.Save(); err != nil {
+			return fmt.Errorf("⚠️ Surgery succeeded, but failed to save Medical History: %w", err)
+		}
+		// ---------------------------------
+
+		fmt.Println("✅ Operation Complete. Medical History updated. Run './saayn verify' to check for drift!")
 		return nil
 	},
 }

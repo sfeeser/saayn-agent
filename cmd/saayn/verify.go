@@ -78,7 +78,6 @@ var verifyCmd = &cobra.Command{
 
 func init() {
 	fmt.
-		Println("SAAYN Deep Engine Initialized")
-	rootCmd.
-		AddCommand(verifyCmd)
+		Println("Medical History Online")
+	rootCmd.AddCommand(verifyCmd)
 }

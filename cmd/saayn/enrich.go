@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/saayn-agent/internal/genome"
 	"github.com/saayn-agent/internal/scanner"
@@ -21,7 +22,7 @@ import (
 
 var enrichCmd = &cobra.Command{
 	Use:   "enrich",
-	Short: "Uses FAST Cognition to automatically document the business purpose of code", // Kept original per your request!
+	Short: "Uses FAST Cognition to automatically document the business purpose of code",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if err := godotenv.Load(); err != nil {
 			// Silently fallback to process environment vars, which is standard for CI/CD
@@ -62,6 +63,31 @@ var enrichCmd = &cobra.Command{
 			_ = conf.Fprint(&buf, ln.Fset, ln.AST)
 			liveASTMap[ln.PublicID] = buf.String()
 		}
+
+		// --- NEW SYNC LOGIC: Safely Adopt & Mint Undiscovered Functions ---
+		// First, map what the brain already knows by PublicID
+		knownFunctions := make(map[string]bool)
+		for _, node := range regManager.Registry.Nodes {
+			knownFunctions[node.PublicID] = true
+		}
+
+		// Now, compare live code against known functions
+		syncCount := 0
+		for _, liveNode := range liveNodes {
+			if !knownFunctions[liveNode.PublicID] {
+				// It's brand new! Mint a proper UUID for it.
+				newUUID := uuid.New().String()
+				liveNode.UUID = newUUID
+
+				// Save it to the brain under the new UUID key
+				regManager.Registry.Nodes[newUUID] = *liveNode
+				syncCount++
+			}
+		}
+		if syncCount > 0 {
+			fmt.Printf("🌱 Minted UUIDs and adopted %d new functions into the genome...\n", syncCount)
+		}
+		// ------------------------------------------------------------------
 
 		// 3. Telemetry Counters
 		updatedCount := 0

@@ -50,9 +50,10 @@ type DependencyMap struct {
 
 // Registry represents the full genome.json file structure.
 type Registry struct {
-	ProjectName string          `json:"project_name"`
-	RootPath    string          `json:"root_path"`
-	Nodes       map[string]Node `json:"nodes"` // Keyed by UUID
+	ProjectName     string          `json:"project_name"`
+	RootPath        string          `json:"root_path"`
+	LastMutatedUUID string          `json:"last_mutated_uuid,omitempty"` // <-- The Medical History!
+	Nodes           map[string]Node `json:"nodes"`                       // Keyed by UUID
 }
 
 type SurgeryRequest struct {

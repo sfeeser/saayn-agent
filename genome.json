@@ -1,6 +1,7 @@
 {
   "project_name": "CGS-Project",
   "root_path": "",
+  "last_mutated_uuid": "89d451f2-61a7-4ed9-8dd3-6f33e2348151",
   "nodes": {
     "0ab85f97-2e14-44ad-b3b7-6cb9f42a4b5c": {
       "uuid": "0ab85f97-2e14-44ad-b3b7-6cb9f42a4b5c",
@@ -44,6 +45,20 @@
       "last_modified": "2026-03-27T06:30:24.687360865-04:00",
       "version": 1
     },
+    "19289f50-f131-42c2-88ef-829eb47561cb": {
+      "uuid": "19289f50-f131-42c2-88ef-829eb47561cb",
+      "public_id": "saayn.init[verify_llms.go]",
+      "fingerprint": "",
+      "logic_hash": "",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "This function registers the \"verify LLM\" command with SAAYN's root command-line interface, making the diagnostic capability for Large Language Models accessible. It ensures SAAYN can validate the integrity and functionality of its critical AI components, supporting its operational reliability as an autonomous agent.",
+      "last_modified": "0001-01-01T00:00:00Z",
+      "version": 0
+    },
     "2c983655-14d0-4e2f-a8da-010b9fcd2de2": {
       "uuid": "2c983655-14d0-4e2f-a8da-010b9fcd2de2",
       "public_id": "saayn.Execute[root.go]",
@@ -57,6 +72,20 @@
       "business_purpose": "It serves as the primary entry point for the SAAYN agent's command-line interface, consolidating all sub-commands and their configurations. This enables the system to correctly parse user-issued commands, execute the intended operations, and provides the fundamental control mechanism for the agent.",
       "last_modified": "2026-03-27T06:30:24.687073799-04:00",
       "version": 1
+    },
+    "2defc1d9-9a10-4e60-ae5a-839ec106a63f": {
+      "uuid": "2defc1d9-9a10-4e60-ae5a-839ec106a63f",
+      "public_id": "saayn.printFailure[verify_llms.go]",
+      "fingerprint": "",
+      "logic_hash": "",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "This function provides crucial debugging information when an LLM verification fails, explaining the failure's context to the user. It generates a sanitized curl command to allow for easy reproduction and diagnosis of the issue, accelerating problem resolution.",
+      "last_modified": "0001-01-01T00:00:00Z",
+      "version": 0
     },
     "305a9717-8ec3-4eba-9d99-7b51f517ace2": {
       "uuid": "305a9717-8ec3-4eba-9d99-7b51f517ace2",
@@ -99,6 +128,62 @@
       "business_purpose": "This function serves as the primary entry point for the SAAYN autonomous Code Genome Agent, initiating and controlling the execution of its core operational workflow. It ensures the SAAYN system performs its designated tasks and handles any critical failures gracefully.",
       "last_modified": "2026-03-27T06:30:24.687997084-04:00",
       "version": 1
+    },
+    "409d1ff6-c87b-42aa-8e35-08d81fe6dea6": {
+      "uuid": "409d1ff6-c87b-42aa-8e35-08d81fe6dea6",
+      "public_id": "saayn.requestMutationDecision[ask.go]",
+      "fingerprint": "",
+      "logic_hash": "",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "This function acts as SAAYN's interface to an external generative AI, crafting a detailed prompt to request an autonomous decision on how to modify the system's Go codebase. It enables SAAYN to leverage AI intelligence to propose exact code changes and a target UUID based on a user's request and the current code context, driving the agent's self-modification capabilities.",
+      "last_modified": "0001-01-01T00:00:00Z",
+      "version": 0
+    },
+    "40dc3460-d366-4fdb-bfda-f1a6e399a322": {
+      "uuid": "40dc3460-d366-4fdb-bfda-f1a6e399a322",
+      "public_id": "saayn.generateBusinessPurpose[enrich.go]",
+      "fingerprint": "",
+      "logic_hash": "",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "This function exists to query an external large language model (LLM) to automatically determine the business purpose of a given code function. It provides value by enriching SAAYN's code genome with automated, high-level contextual understanding, enabling better code categorization and management based on its functional role.",
+      "last_modified": "0001-01-01T00:00:00Z",
+      "version": 0
+    },
+    "4d7b11bd-e249-4297-a40d-16b6d30a88b4": {
+      "uuid": "4d7b11bd-e249-4297-a40d-16b6d30a88b4",
+      "public_id": "saayn.init[enrich.go]",
+      "fingerprint": "",
+      "logic_hash": "",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "This function integrates the \"enrich\" command into SAAYN's command-line interface, enabling users or other agents to initiate code genome enrichment processes. It defines the `--path` flag, allowing precise targeting of the project root for these operations.",
+      "last_modified": "0001-01-01T00:00:00Z",
+      "version": 0
+    },
+    "564c6b3d-7f70-48f8-b5a8-71d2b61c1302": {
+      "uuid": "564c6b3d-7f70-48f8-b5a8-71d2b61c1302",
+      "public_id": "saayn.verifyTarget[verify_llms.go]",
+      "fingerprint": "",
+      "logic_hash": "",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "This function verifies the operational status and correct configuration of a target Large Language Model (LLM) endpoint. It ensures SAAYN can successfully communicate with the LLM, receive expected responses, and thus validates both connectivity and basic semantic interaction necessary for agent operations.",
+      "last_modified": "0001-01-01T00:00:00Z",
+      "version": 0
     },
     "5cfdb97d-7d5e-4e4c-9597-eb31045fb785": {
       "uuid": "5cfdb97d-7d5e-4e4c-9597-eb31045fb785",
@@ -253,6 +338,20 @@
       "business_purpose": "This function enables SAAYN to autonomously modify specific code functions within a project by replacing their logic with new instructions. It ensures the integrity of these changes through automatic validation and rollback, providing a core mechanism for SAAYN's code evolution capabilities.",
       "last_modified": "2026-03-27T06:30:24.687740113-04:00",
       "version": 1
+    },
+    "fdc57561-9ad8-4a42-ae21-dfd7a7843882": {
+      "uuid": "fdc57561-9ad8-4a42-ae21-dfd7a7843882",
+      "public_id": "saayn.init[ask.go]",
+      "fingerprint": "",
+      "logic_hash": "",
+      "dependencies": {
+        "calls": null,
+        "reads": null,
+        "writes": null
+      },
+      "business_purpose": "This function integrates an \"ask\" command into the SAAYN command-line interface, making a core capability of the autonomous agent accessible to users. It allows users to initiate queries or actions within a specified project context, providing essential operational control and flexibility.",
+      "last_modified": "0001-01-01T00:00:00Z",
+      "version": 0
     }
   }
 }
