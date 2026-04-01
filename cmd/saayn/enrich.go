@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/saayn-agent/internal/genome"
+	"github.com/saayn-agent/internal/genome/index"
 	"github.com/saayn-agent/internal/scanner"
 	"github.com/saayn-agent/pkg/model"
 	"github.com/spf13/cobra"
@@ -28,6 +29,7 @@ type EnrichConfig struct {
 	Path          string
 	APIKey        string
 	Model         string
+	EmbedModel    string
 	BaseURL       string
 	DelayDuration time.Duration
 }
@@ -53,22 +55,61 @@ func runEnrich(cmd *cobra.Command, args []string) error {
 
 	fmt.Println("🧠 Starting Semantic Enrichment Process...")
 
+	// 1. Prepare Inputs
 	regManager, liveNodes, liveASTMap, err := prepareEnrichmentInputs(cfg.Path)
 	if err != nil {
 		return err
 	}
 
-	syncCount := adoptNewNodes(regManager, liveNodes)
-	if syncCount > 0 {
-		fmt.Printf("🌱 Minted UUIDs and adopted %d new functions into the genome...\n", syncCount)
+	// 2. Prepare Index (V2 Change)
+	indexPath := cfg.Path + "/genome.index.json"
+	idxStore, err := index.LoadIndex(indexPath)
+	if err != nil {
+		// If index is missing or corrupt, start a fresh one for this model
+		fmt.Println("📭 No existing semantic index found. Creating new index...")
+		idxStore = index.NewIndexStore(cfg.EmbedModel, 0)
 	}
 
+	// 3. Adopt New Nodes
+	syncCount := adoptNewNodes(regManager, liveNodes)
+	if syncCount > 0 {
+		fmt.Printf("🌱 Adopted %d new functions into the genome...\n", syncCount)
+	}
+
+	// 4. Run Semantic Enrichment (AI Purpose Generation)
 	stats := enrichRegistry(cmd.Context(), regManager, liveNodes, liveASTMap, cfg)
 
-	printEnrichmentSummary(stats)
+	// 5. Run Semantic Indexing (V2 SyncIndex Orchestration)
+	fmt.Println("\n📡 Synchronizing Semantic Index...")
+	syncStats, err := index.SyncIndex(
+		cmd.Context(),
+		idxStore,
+		regManager.Registry.Nodes,
+		cfg.APIKey,
+		cfg.EmbedModel,
+		cfg.BaseURL,
+	)
+	if err != nil {
+		// We don't want to fail the whole command if indexing fails,
+		// but we should warn the user.
+		fmt.Printf("⚠️  Index Sync Warning: %v\n", err)
+	}
 
+	// 6. Report Summaries
+	printEnrichmentSummary(stats)
+	printIndexSummary(syncStats)
+
+	// 7. Save Results
 	if err := saveEnrichmentResults(regManager, stats, syncCount); err != nil {
 		return err
+	}
+
+	// Save Index if changes occurred
+	if syncStats.Created > 0 || syncStats.Updated > 0 || syncStats.Deleted > 0 {
+		if err := idxStore.Save(indexPath); err != nil {
+			return fmt.Errorf("failed to save semantic index: %w", err)
+		}
+		fmt.Println("💾 Semantic index successfully updated.")
 	}
 
 	return nil
@@ -87,6 +128,10 @@ func loadEnrichConfig(cmd *cobra.Command) (EnrichConfig, error) {
 	apiKey := strings.TrimSpace(os.Getenv("SAAYN_FAST_API_KEY"))
 	modelName := strings.TrimSpace(os.Getenv("SAAYN_FAST_MODEL"))
 	baseURL := strings.TrimSpace(os.Getenv("SAAYN_FAST_BASE_URL"))
+	embedModel := strings.TrimSpace(os.Getenv("SAAYN_EMBED_MODEL"))
+	if embedModel == "" {
+		embedModel = "text-embedding-004" // Safe default for Google
+	}
 
 	delaySec := 4
 	if val, err := strconv.Atoi(os.Getenv("SAAYN_API_DELAY_SECONDS")); err == nil && val > 0 {
@@ -101,6 +146,7 @@ func loadEnrichConfig(cmd *cobra.Command) (EnrichConfig, error) {
 		Path:          path,
 		APIKey:        apiKey,
 		Model:         modelName,
+		EmbedModel:    embedModel,
 		BaseURL:       baseURL,
 		DelayDuration: time.Duration(delaySec) * time.Second,
 	}, nil
@@ -270,9 +316,9 @@ func syncNodeState(
 func printActiveNodeHeader(node model.Node) {
 	fmt.Println()
 
-	icon := "⚙️ "
+	icon := " ⚙️ "
 	if node.NodeType == "struct" {
-		icon = "📦  "
+		icon = " 📦 "
 	}
 
 	displayHash := "n/a"
@@ -289,6 +335,19 @@ func printEnrichmentSummary(stats EnrichmentStats) {
 	fmt.Printf("  - Skipped (Already Enriched): %d\n", stats.SkippedAlready)
 	fmt.Printf("  - Skipped (Missing/Drifted):  %d\n", stats.SkippedMissing)
 	fmt.Printf("  - Failed:  %d\n", stats.Failed)
+}
+
+func printIndexSummary(stats index.SyncStats) {
+	if stats.Created == 0 && stats.Updated == 0 && stats.Deleted == 0 {
+		fmt.Println("✅ Semantic index is already up to date.")
+		return
+	}
+
+	fmt.Println("\n🧠 Semantic Index Summary:")
+	fmt.Printf("  - Created: %d\n", stats.Created)
+	fmt.Printf("  - Updated: %d\n", stats.Updated)
+	fmt.Printf("  - Deleted: %d\n", stats.Deleted)
+	fmt.Printf("  - Skipped: %d\n", stats.Skipped)
 }
 
 func saveEnrichmentResults(
