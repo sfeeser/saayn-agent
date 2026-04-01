@@ -9,21 +9,20 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/saayn-agent/pkg/model"
 )
 
-// FullScan walks the directory and extracts all functional nodes
-// 1. Change the return type to a slice of POINTERS []*model.Node
+// FullScan walks the directory and extracts all functional and structural nodes
 func FullScan(root string) ([]*model.Node, error) {
 	var nodes []*model.Node
-	fset := token.NewFileSet() // This is the "Coordinate Map" for the whole scan
+	fset := token.NewFileSet()
 
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") {
 			return err
 		}
 
-		// Parse the file using the shared fset
 		f, err := parser.ParseFile(fset, path, nil, parser.ParseComments)
 		if err != nil {
 			return nil
@@ -32,15 +31,33 @@ func FullScan(root string) ([]*model.Node, error) {
 		pkgName := f.Name.Name
 
 		ast.Inspect(f, func(n ast.Node) bool {
-			fn, ok := n.(*ast.FuncDecl)
-			if !ok {
-				return true
+			switch node := n.(type) {
+
+			// Target 1: Functions and Methods
+			case *ast.FuncDecl:
+				nodes = append(nodes, extractFuncMetadata(pkgName, path, node, fset))
+
+			// Target 2: General Declarations (Structs AND Variables)
+			case *ast.GenDecl:
+				// Handle Structs
+				if node.Tok == token.TYPE {
+					for _, spec := range node.Specs {
+						if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+							if _, isStruct := typeSpec.Type.(*ast.StructType); isStruct {
+								nodes = append(nodes, extractStructMetadata(pkgName, path, node, typeSpec, fset))
+							}
+						}
+					}
+				}
+				// --- NEW: Handle Variables (like enrichCmd) ---
+				if node.Tok == token.VAR {
+					for _, spec := range node.Specs {
+						if valSpec, ok := spec.(*ast.ValueSpec); ok {
+							nodes = append(nodes, extractVarMetadata(pkgName, path, node, valSpec, fset))
+						}
+					}
+				}
 			}
-
-			// Pass the 'path' variable from the WalkDir loop into the helper
-			newNode := extractNodeMetadata(pkgName, path, fn, fset)
-			nodes = append(nodes, newNode)
-
 			return true
 		})
 
@@ -50,8 +67,8 @@ func FullScan(root string) ([]*model.Node, error) {
 	return nodes, err
 }
 
-// extractNodeMetadata turns a raw AST function into a CGS Node
-func extractNodeMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *token.FileSet) *model.Node {
+// extractFuncMetadata turns a raw AST function into a CGS Node
+func extractFuncMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *token.FileSet) *model.Node {
 	receiver := ""
 	if fn.Recv != nil && len(fn.Recv.List) > 0 {
 		switch t := fn.Recv.List[0].Type.(type) {
@@ -68,13 +85,52 @@ func extractNodeMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *to
 	}
 	identity += "." + fn.Name.Name
 
-	// 🚨 THE FIX: Append the filename so multiple init() functions don't collide
 	fileName := filepath.Base(filePath)
 	uniqueID := fmt.Sprintf("%s[%s]", identity, fileName)
 
 	return &model.Node{
+		UUID:     uuid.New().String(), // Native UUID generation!
 		PublicID: uniqueID,
+		NodeType: "function",
 		AST:      fn,
+		Fset:     fset,
+	}
+}
+
+// extractStructMetadata turns a raw AST struct into a CGS Node
+func extractStructMetadata(pkg string, filePath string, decl *ast.GenDecl, typeSpec *ast.TypeSpec, fset *token.FileSet) *model.Node {
+	identity := fmt.Sprintf("%s.%s", pkg, typeSpec.Name.Name)
+	fileName := filepath.Base(filePath)
+	uniqueID := fmt.Sprintf("%s[%s]", identity, fileName)
+
+	return &model.Node{
+		UUID:     uuid.New().String(), // Native UUID generation!
+		PublicID: uniqueID,
+		NodeType: "struct",
+		// We store the GenDecl so we capture the doc comments above the struct too!
+		AST:  decl,
+		Fset: fset,
+	}
+}
+
+// extractVarMetadata turns a global variable (GenDecl + ValueSpec) into a CGS Node
+func extractVarMetadata(pkg string, filePath string, decl *ast.GenDecl, vSpec *ast.ValueSpec, fset *token.FileSet) *model.Node {
+	// A VarSpec can have multiple names (var a, b int), but usually Cobra cmds have one
+	name := "anonymous_var"
+	if len(vSpec.Names) > 0 {
+		name = vSpec.Names[0].Name
+	}
+
+	identity := fmt.Sprintf("%s.%s", pkg, name)
+	fileName := filepath.Base(filePath)
+	uniqueID := fmt.Sprintf("%s[%s]", identity, fileName)
+
+	return &model.Node{
+		UUID:     uuid.New().String(),
+		PublicID: uniqueID,
+		NodeType: "struct", // Treating as a data structure/package
+		FilePath: filePath,
+		AST:      decl, // We store the whole GenDecl to capture all values and comments
 		Fset:     fset,
 	}
 }

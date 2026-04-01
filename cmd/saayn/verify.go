@@ -49,11 +49,27 @@ var verifyCmd = &cobra.Command{
 		for _, ln := range liveRegManager.Registry.Nodes {
 			oldHash, exists := oldByPubID[ln.PublicID]
 
+			// --- WILEY SAFE SLICING ---
+			safeLiveHash := "n/a     "
+			if len(ln.LogicHash) >= 8 {
+				safeLiveHash = ln.LogicHash[:8]
+			} else if len(ln.LogicHash) > 0 {
+				safeLiveHash = ln.LogicHash
+			}
+
+			safeOldHash := "n/a     "
+			if exists && len(oldHash) >= 8 {
+				safeOldHash = oldHash[:8]
+			} else if exists && len(oldHash) > 0 {
+				safeOldHash = oldHash
+			}
+			// --------------------------
+
 			if !exists {
-				fmt.Printf("  ✨ NEW      %-45s [%s]\n", ln.PublicID, ln.LogicHash[:8])
+				fmt.Printf("  ✨ NEW      %-45s [%s]\n", ln.PublicID, safeLiveHash)
 				newNodes++
 			} else if oldHash != ln.LogicHash {
-				fmt.Printf("  ⚠️  MODIFIED %-45s [%s -> %s]\n", ln.PublicID, oldHash[:8], ln.LogicHash[:8])
+				fmt.Printf("  ⚠️  MODIFIED %-45s [%s -> %s]\n", ln.PublicID, safeOldHash, safeLiveHash)
 				changed++
 			}
 

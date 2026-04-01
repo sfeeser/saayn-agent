@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"go/ast"
 	_ "go/ast"
 	"go/printer"
 	_ "go/token"
@@ -60,8 +61,20 @@ func (rm *RegistryManager) NormalizeAndHash(n *model.Node) string {
 
 	var buf strings.Builder
 	conf := &printer.Config{Mode: printer.RawFormat, Tabwidth: 8}
-	if err := conf.Fprint(&buf, n.Fset, n.AST.Body); err != nil {
-		return ""
+
+	// 🧠 THE FIX: Safely determine what kind of AST node we are hashing
+	switch node := n.AST.(type) {
+	case *ast.FuncDecl:
+		// It's a function! Hash its internal logic (the Body)
+		if node.Body != nil {
+			_ = conf.Fprint(&buf, n.Fset, node.Body)
+		}
+	case *ast.GenDecl:
+		// It's a struct! Hash the structure itself
+		_ = conf.Fprint(&buf, n.Fset, node)
+	default:
+		// Fallback
+		_ = conf.Fprint(&buf, n.Fset, node)
 	}
 
 	body := buf.String()
@@ -73,14 +86,16 @@ func (rm *RegistryManager) NormalizeAndHash(n *model.Node) string {
 
 	// CALCULATE HASH
 	hash := sha256.Sum256([]byte(body))
-
-	// Create the hash string HERE so the printer and the return can both use it
 	hashStr := fmt.Sprintf("%x", hash)
 
-	// 💅 THE PRETTY PRINT
-	// If the hash is empty (shouldn't happen here, but just in case), protect the slice
+	// 💅 THE PRETTY PRINT (Live Pulse Mode)
 	if len(hashStr) >= 8 {
-		fmt.Printf("  🧬 Indexed %-45s [%s]\n", n.PublicID, hashStr[:8])
+		icon := "⚙️ "
+		if n.NodeType == "struct" {
+			icon = "📦"
+		}
+		// Use \r to return to the start of the line and %-60s to overwrite old text
+		fmt.Printf("\r\033[2K   %s Indexing %-60s", icon, n.PublicID)
 	}
 
 	return hashStr
