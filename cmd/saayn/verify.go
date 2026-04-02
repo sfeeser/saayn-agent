@@ -93,8 +93,5 @@ var verifyCmd = &cobra.Command{
 }
 
 func init() {
-	fmt.
-		Println("Enterprise Git Formatting Online")
-	rootCmd.
-		AddCommand(verifyCmd)
+	rootCmd.AddCommand(verifyCmd)
 }

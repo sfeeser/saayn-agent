@@ -92,6 +92,7 @@ func extractFuncMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *to
 		UUID:     uuid.New().String(), // Native UUID generation!
 		PublicID: uniqueID,
 		NodeType: "function",
+		FilePath: filePath,
 		AST:      fn,
 		Fset:     fset,
 	}
@@ -107,6 +108,7 @@ func extractStructMetadata(pkg string, filePath string, decl *ast.GenDecl, typeS
 		UUID:     uuid.New().String(), // Native UUID generation!
 		PublicID: uniqueID,
 		NodeType: "struct",
+		FilePath: filePath,
 		// We store the GenDecl so we capture the doc comments above the struct too!
 		AST:  decl,
 		Fset: fset,

@@ -3,6 +3,7 @@ package index
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/saayn-agent/pkg/model"
 )
@@ -78,9 +79,12 @@ func SyncIndex(
 			continue
 		}
 
+		// --- THE THROTTLE ---
+		// Sleep for 200ms to stay under the 5-requests-per-second API quota limit
+		time.Sleep(200 * time.Millisecond)
+
 		// Fetch New Embedding
 		doc := BuildRetrievalDoc(input)
-		// Fix: Signature now matches our finalized FetchEmbedding (no extra nil client)
 		vec, err := FetchEmbedding(ctx, nil, apiKey, modelName, baseURL, doc)
 		if err != nil {
 			return stats, fmt.Errorf("sync failed at node %s: %w", node.PublicID, err)
