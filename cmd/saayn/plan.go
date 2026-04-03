@@ -88,41 +88,43 @@ func runPlan(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("LLM planning failed: %w", err)
 		}
 
-		fmt.Println("👀 Performing Code Review + AST splice analysisx...")
+		fmt.Println("👀 Performing code review...")
+		fmt.Println("   ↳ AST splice analysis and syntax validation in progress...")
+
 		var patch surgery.SurgeryPatch
-		// Using strict JSON unmarshal now that schema has json tags
 		if err := json.Unmarshal([]byte(jsonResponse), &patch); err != nil {
+			fmt.Printf("   ❌ Rejected: AI returned malformed JSON. Bouncing back for repair...\n")
 			recordAttempt(&metadata, attempt, "json_parse", err)
 			feedback = fmt.Sprintf("VALIDATION FAILURE:\nStage: json_parse\nError: %v\n\nPlease output strictly valid JSON matching the schema.", err)
 			continue
 		}
 		patch.Version = surgery.SurgeryPatchVersion
 
-		// 1. Strict Schema & Target Drift Validation
 		if err := validateDrift(plan, patch); err != nil {
+			fmt.Printf("   ❌ Rejected: AI altered the target identity (%v). Bouncing back for repair...\n", err)
 			recordAttempt(&metadata, attempt, "schema_validation", err)
 			feedback = fmt.Sprintf("VALIDATION FAILURE:\nStage: schema_validation\nError: %v\n\nEnsure target_node exactly matches the plan and action is 'replace_node'. Do NOT change the UUID, PublicID, FilePath, or NodeType.", err)
 			continue
 		}
 
-		// 2. Splice & Format Validation (Uses apply.go's strict logic!)
-		// spliceAST already formats via format.Source and resolves imports via imports.Process.
 		splicedSrc, err := spliceAST(plan.Target.FilePath, plan.Target.PublicID, originalBytes, patch.NewCode)
 		if err != nil {
+			shortErr := strings.Split(err.Error(), "\n")[0]
+			fmt.Printf("   ❌ Rejected: Syntax/formatting error (%s). Bouncing back for repair...\n", shortErr)
 			recordAttempt(&metadata, attempt, "splice_file", err)
 			feedback = fmt.Sprintf("VALIDATION FAILURE:\nStage: splice_file\nError: %v\n\nPlease fix the syntax so it can be cleanly formatted and spliced into the AST.", err)
 			continue
 		}
 
-		// 3. Complete File Parse Validation
 		fset := token.NewFileSet()
 		if _, err := parser.ParseFile(fset, plan.Target.FilePath, splicedSrc, parser.AllErrors); err != nil {
+			shortErr := strings.Split(err.Error(), "\n")[0]
+			fmt.Printf("   ❌ Rejected: File parse failed (%s). Bouncing back for repair...\n", shortErr)
 			recordAttempt(&metadata, attempt, "parse_file", err)
 			feedback = fmt.Sprintf("VALIDATION FAILURE:\nStage: parse_file\nError: %v\n\nThe resulting file fails to parse. Check for unbalanced braces or invalid declarations.", err)
 			continue
 		}
 
-		// SUCCESS! The patch is pristine.
 		fmt.Println("✅ Validation passed! Syntax and context are sound.")
 		recordAttempt(&metadata, attempt, "validation_passed", nil)
 		metadata.Status = "approved"
