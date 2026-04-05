@@ -1,39 +1,41 @@
-🧬 The Greenfield Protocol: Spawning Life from Intent
-"Code is ephemeral. Intent is eternal."
+# 🧬 The Greenfield Protocol: Spawning Life from Intent
+- Code is ephemeral.
+- Intent is eternal.
 
-SAAYN-Agent v6 introduces Greenfield, a deterministic "Genesis Engine" that materializes full Go projects from a Markdown Vision and a YAML Specification. It doesn't just "write code"; it sequences a living genome through a recursive Surgical Inner Loop.
+SAAYN-Agent v6 introduces GENESIS, a deterministic "Genesis Engine" that materializes full Go projects from a Markdown Vision and a YAML Specification. It doesn't just "write code"; it sequences a living genome through a recursive Surgical Inner Loop.
 
-🚀 The Genesis Command
+### 🚀 The Genesis Command
 To bootstrap a new project, you provide the Soul (readme.md), the Skeleton (specbook.yaml), and a target destination.
 
-Bash
+```Bash
 ./saayn greenfield -f readme.md -s specbook.yaml --target ./my-new-app
-🔄 The Surgical Inner Loop (The "Immune System")
+```
+
+### 🔄 The Surgical Inner Loop (The "Immune System")
+
 Most AI agents fail because they "guess" their way through a file. SAAYN uses a multi-tier Remediation Loop to ensure that every node is buildable and logically sound before it ever touches your disk.
 
 1. The Local Physics Audit (ast.go)
-Before the AI is even allowed to review the logic, SAAYN performs a Structural Walk using go/ast.
-
-Graph Integrity: Does this file break internal dependencies?
-
-Interface Compliance: Does the struct actually satisfy the interface defined in the Specbook?
-
-Syntax Lock: Is the code buildable?
-
-Result: If the "Physics" fail, SAAYN auto-rejects the draft and forces the LLM to provide a syntactically valid version.
+    - Before the AI is even allowed to review the logic
+    - SAAYN performs a Structural Walk using go/ast.
+    - Graph Integrity: Does this file break internal dependencies?
+    - Interface Compliance: Does the struct actually satisfy the interface defined in the Specbook?
+    - Syntax Lock: Is the code buildable?
+    - Result: If the "Physics" fail, SAAYN auto-rejects the draft and forces the LLM to provide a syntactically valid version.
 
 2. The Cognitive Audit (LLM Review)
-Once the code is physically sound, SAAYN triggers a Cognitive Review. It compares the draft against your readme.md intent.
-
-Intent Drift: "The Readme says this should be distributed, but you used a local global variable. Fix it."
-
-Business Purpose: "The Specbook says this function must be idempotent. Prove it."
+    - Once the code is physically sound, SAAYN triggers a Cognitive Review. It compares the draft against your readme.md intent.
+    - Intent Drift: "The Readme says this should be distributed, but you used a local global variable. Fix it."
+    - Business Purpose: "The Specbook says this function must be idempotent. Prove it."
 
 3. The Remediation Cycle
-If the Cognitive Audit fails, SAAYN enters a Self-Correction Loop (Max 3 iterations). It feeds the AST errors and the Review Findings back to the LLM to generate a surgical patch.
+    - If the Cognitive Audit fails, SAAYN enters a Self-Correction Loop (Max 3 iterations).
+    - It feeds the AST errors and the Review Findings back to the LLM to generate a surgical patch.
 
 🖥️ Genesis in Action (Live CLI Trace)
-Plaintext
+
+
+```Plaintext
 $ ./saayn greenfield -f vision.md -s spec.yaml --target ./task-bot
 
 🧬 PHASE 0: CONTEXTUAL INGESTION
@@ -94,24 +96,23 @@ $ ./saayn greenfield -f vision.md -s spec.yaml --target ./task-bot
 --------------------------------------------------------------------------------
 ✅ GENESIS COMPLETE: 12 Nodes Materialized. 1 Remediated.
 📊 Build Status: 100% PASS
-🏗️ Why Developers Use SAAYN Greenfield
+```
+
+### 🏗️ Why Developers Use SAAYN Greenfield
 🛡️ Hallucination-Proof
 Because SAAYN walks the AST (Abstract Syntax Tree) locally, it is physically impossible for the agent to "hallucinate" a package that doesn't exist or a function signature that doesn't match the spec.
 
-🧠 Short-Term Memory Preservation
+### 🧠 Short-Term Memory Preservation
 SAAYN treats the CLI Log as its "Memory." By printing the Logic Hash and Review Findings for every node, the agent maintains a persistent state across fresh context windows. If the process is interrupted, you simply point SAAYN at the genome.json and it picks up exactly where the last hash left off.
 
-⚖️ Deterministic Evolution
+### ⚖️ Deterministic Evolution
 The Identity Triad (PublicID, Fingerprint, Logic Hash) ensures that your project is born with an audit trail. You can run saayn verify one second after genesis and see a perfect 1:1 match between your Vision and your Reality.
 
-🛠️ Getting Started
-Define your Soul: Write a readme.md describing your app.
-
-Define your Physics: Write a specbook.yaml defining your packages.
-
-Spawn: Run saayn genesis.
-
-Stop coding in the dark. Start sequencing your genome.
+### 🛠️ Getting Started
+0. Define your Soul: Write a readme.md describing your app.
+1. Define your Physics: Write a specbook.yaml defining your packages.
+2. Spawn: Run saayn genesis.
+3. Stop coding in the dark. Start sequencing your genome.
 
 If you made it this far, then here is the real vision:
 
