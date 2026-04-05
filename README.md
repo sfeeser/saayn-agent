@@ -8,15 +8,20 @@ SAAYN V5 is a **Semantic Surgery Engine** designed to treat your codebase as a l
 ### 🧠 The Intent Bridge
 The core of the architecture is an agentic **Local Vector Index** that maps human language to code reality. When you ask a question in "plain English," SAAYN performs a high-speed mathematical lookup against your locally stored embeddings.
 
-* **Zero-Knowledge Discovery:** You don't need to know the function names. Searching for *"How do we handle expired sessions?"* will rank the relevant security logic #1, even if the function is named `pkg.ValidateTick()`.
-* **Privacy-First Embeddings:** Your semantic map is processed and stored **locally** in `genome.index.json`. Your architectural "intent" stays on your machine, not in a cloud database.
-* **The Identity Triad:** Every piece of code is tracked by its **Public ID**, **Structural Fingerprint**, and **Logic Hash**. If you change a single character, the "Nervous System" detects the drift instantly.
+* **Zero-Knowledge Discovery:**
+    - You don't need to know the function names.
+    - Searching for *"How do we handle expired sessions?"* will rank the relevant security logic #1, even if the function is named `pkg.ValidateTick()`.
+* **Privacy-First Embeddings:**
+    - Your semantic map is processed and stored **locally** in `genome.index.json`.
+    - Your architectural "intent" stays on your machine, not in a cloud database.
+* **The Identity Triad:**
+    - Every piece of code is tracked by its **Public ID**, **Structural Fingerprint**, and **Logic Hash**.
+    - If you change a single character, the "Nervous System" detects the drift instantly.
 
 ### 🛠 The Workflow Loop
 1.  **Ingest:** `init` and `enrich` build the initial "Map of Intent."
 2.  **Locate:** `search-intent` and `trace` find the exact "Twigs" that need pruning.
 3.  **Operate:** `plan` and `apply` execute multi-file AST splicing with 100% syntax safety.
-
 
 ---
 
@@ -125,9 +130,10 @@ saayn-agent contacts your AI and sequences your code's genome
 💾 Semantic index successfully updated.
 ```
 
-### 3. Now use saayn to walk to the code genome:
+### 3. Now use saayn agent to walk to the code genome:
 The response you see below will generate in less than a second.  
-saayn-agent does inferencing locally and it is blazing fast
+saayn-agent does inferencing locally and is blazing fast
+
 ```text
 ./saayn search-intent "find the code that formats the summary text with indentation"
 
