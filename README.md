@@ -1,4 +1,4 @@
-# SAAYN: Code Genome System (CGS)
+# SAAYN-AGENT: The Code Genome System
 > **"Specifications Are All You Need."**
 
 ## 🏗 System Architecture
