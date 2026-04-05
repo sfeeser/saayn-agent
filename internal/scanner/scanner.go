@@ -69,7 +69,7 @@ func FullScan(root string) ([]*model.Node, error) {
 
 // extractFuncMetadata turns a raw AST function into a CGS Node
 func extractFuncMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *token.FileSet) *model.Node {
-	receiver := ""
+	var receiver string
 	if fn.Recv != nil && len(fn.Recv.List) > 0 {
 		switch t := fn.Recv.List[0].Type.(type) {
 		case *ast.StarExpr:
@@ -79,6 +79,8 @@ func extractFuncMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *to
 		}
 	}
 
+	// IDENTITY CONSTRUCTION
+	// Goal: pkg.Func OR pkg.Receiver.Func
 	identity := pkg
 	if receiver != "" {
 		identity += "." + receiver
@@ -89,12 +91,12 @@ func extractFuncMetadata(pkg string, filePath string, fn *ast.FuncDecl, fset *to
 	uniqueID := fmt.Sprintf("%s[%s]", identity, fileName)
 
 	return &model.Node{
-		UUID:     uuid.New().String(), // Native UUID generation!
+		UUID:     uuid.New().String(),
 		PublicID: uniqueID,
 		NodeType: "function",
 		FilePath: filePath,
-		AST:      fn,
-		Fset:     fset,
+		AST:      fn,   // Pass the AST though
+		Fset:     fset, // Pass the Fset through
 	}
 }
 

@@ -1,7 +1,6 @@
 package saayn
 
 import (
-	"bytes"
 	"fmt"
 	"go/ast"
 	"go/format"
@@ -9,9 +8,9 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/tools/imports"
 	"gopkg.in/yaml.v3"
 
 	"github.com/saayn-agent/internal/genome/surgery"
@@ -21,147 +20,153 @@ var applyInputFile string
 
 var applyCmd = &cobra.Command{
 	Use:   "apply",
-	Short: "Apply a generated surgery patch to the local filesystem using AST splicing",
+	Short: "Apply a generated V5 surgery patch set to the local filesystem using batch AST splicing",
 	RunE:  runApply,
 }
 
 func init() {
 	rootCmd.AddCommand(applyCmd)
-	applyCmd.Flags().StringVarP(&applyInputFile, "file", "f", "patch.yaml", "Path to the patch file")
+	applyCmd.Flags().StringVarP(&applyInputFile, "file", "f", "patch.yaml", "Path to the patch set file")
 }
 
-func runApply(cmd *cobra.Command, args []string) error {
-	fmt.Printf("🩺 Initializing AST Surgeon for %s...\n", applyInputFile)
+func runApply(_ *cobra.Command, _ []string) error {
+	fmt.Printf("🩺 Initializing V5 Batch AST Surgeon for %s...\n", applyInputFile)
 
-	// 1. Read the Patch File
+	// 1. Read and Unmarshal
 	yamlBytes, err := os.ReadFile(applyInputFile)
 	if err != nil {
 		return fmt.Errorf("failed to read patch file: %w", err)
 	}
 
-	var patch surgery.SurgeryPatch
-	if err := yaml.Unmarshal(yamlBytes, &patch); err != nil {
+	var patchSet surgery.SurgeryPatchSet
+	if err := yaml.Unmarshal(yamlBytes, &patchSet); err != nil {
 		return fmt.Errorf("failed to parse patch YAML: %w", err)
 	}
 
-	// 2. Validate Patch Content
-	if patch.TargetNode.FilePath == "" || patch.TargetNode.PublicID == "" {
-		return fmt.Errorf("invalid patch: missing file_path or public_id")
-	}
-	if patch.Action != surgery.ActionReplaceNode {
-		return fmt.Errorf("unsupported patch action: %s", patch.Action)
-	}
-	if strings.TrimSpace(patch.NewCode) == "" {
-		return fmt.Errorf("invalid patch: new_code is empty")
-	}
-	if patch.TargetNode.NodeType != "function" {
-		return fmt.Errorf("V3 apply only supports function targets, got %s", patch.TargetNode.NodeType)
+	// 2. Safety Gate
+	if patchSet.Review == nil || patchSet.Review.Status != surgery.StatusApproved {
+		return fmt.Errorf("🛑 safety abort: patch set is not marked as 'approved'")
 	}
 
-	fmt.Printf("🎯 Target isolated: %s\n", patch.TargetNode.PublicID)
-	fmt.Printf("📝 Rationale: %s\n", patch.Rationale)
-
-	// 3. Read Original Source (Before any destructive action)
-	originalBytes, err := os.ReadFile(patch.TargetNode.FilePath)
-	if err != nil {
-		return fmt.Errorf("failed to read original file for backup/surgery: %w", err)
+	// 3. Group records by file to prevent redundant I/O and backup collisions
+	fileGroups := make(map[string][]surgery.PatchRecord)
+	for _, rec := range patchSet.Records {
+		if rec.Action == surgery.ActionNone {
+			continue
+		}
+		fileGroups[rec.TargetNode.FilePath] = append(fileGroups[rec.TargetNode.FilePath], rec)
 	}
 
-	// 4. Create a Safety Backup immediately
-	backupPath := patch.TargetNode.FilePath + ".bak"
-	if err := os.WriteFile(backupPath, originalBytes, 0644); err != nil {
-		fmt.Printf("⚠️ Warning: Could not create backup at %s\n", backupPath)
-		// For V3 we continue, but we warn the user.
-	} else {
-		fmt.Printf("🛡️  Backup created at: %s\n", backupPath)
+	if len(fileGroups) == 0 {
+		fmt.Println("✅ No changes required. All records were marked as 'none'.")
+		return nil
 	}
 
-	// TODO (V4): Compute logic hash of the located targetNode and compare against patch.TargetNode.LogicHash
-	// to ensure the file hasn't drifted since the plan was created.
+	// 4. Execute Batch Surgery
+	for path, records := range fileGroups {
+		fmt.Printf("📂 Processing file: %s (%d changes)\n", path, len(records))
 
-	// 5. Perform the AST Splice using exact identity matching
-	fmt.Println("✂️  Splicing AST...")
-	patchedBytes, err := spliceAST(patch.TargetNode.FilePath, patch.TargetNode.PublicID, originalBytes, patch.NewCode)
-	if err != nil {
-		return fmt.Errorf("AST splicing failed: %w", err)
+		// A. Read once
+		currentSrc, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read %s: %w", path, err)
+		}
+
+		// B. Backup once
+		backupPath := path + ".bak"
+		if err := os.WriteFile(backupPath, currentSrc, 0644); err != nil {
+			fmt.Printf("   ⚠️  Warning: Backup failed for %s\n", path)
+		}
+
+		// C. Apply all records for THIS file in memory
+		for _, rec := range records {
+			// Strict per-record validation at apply-time
+			if rec.Action != surgery.ActionReplaceNode {
+				return fmt.Errorf("[%s]: unsupported action %q", rec.TargetNode.PublicID, rec.Action)
+			}
+			if rec.Status != surgery.StatusApproved {
+				return fmt.Errorf("[%s]: record is not approved", rec.TargetNode.PublicID)
+			}
+			if rec.TargetNode.NodeType != "function" {
+				return fmt.Errorf("[%s]: V5 apply only supports function targets", rec.TargetNode.PublicID)
+			}
+
+			fmt.Printf("   ✂️  Splicing: %s\n", rec.TargetNode.PublicID)
+
+			// We pass currentSrc into the splice and update it with the result
+			// This allows multiple edits to accumulate in the buffer
+			currentSrc, err = spliceAST(path, rec.TargetNode.PublicID, currentSrc, rec.NewCode)
+			if err != nil {
+				return fmt.Errorf("splice failed for %s: %w", rec.TargetNode.PublicID, err)
+			}
+		}
+
+		// D. Write once
+		if err := os.WriteFile(path, currentSrc, 0644); err != nil {
+			return fmt.Errorf("failed to write modified file %s: %w", path, err)
+		}
+		fmt.Printf("   ✅ Successfully updated %s\n", filepath.Base(path))
 	}
 
-	// 6. Write the mutated file back to disk
-	if err := os.WriteFile(patch.TargetNode.FilePath, patchedBytes, 0644); err != nil {
-		return fmt.Errorf("failed to write patched file: %w", err)
-	}
-
-	fmt.Println("✅ Surgery successful! Patch applied to disk.")
+	fmt.Println("\n🎉 Batch Surgery Complete. Files updated on disk.")
 	return nil
 }
 
-// --- AST Splicing Logic ---
+// --- Hardened AST Splicing Logic ---
 
-// spliceAST reads a Go AST, reconstructs the identities, finds the target matching the full publicID,
-// replaces its exact byte range with newCode, and runs go/format on the result.
 func spliceAST(filePath string, publicID string, src []byte, newCode string) ([]byte, error) {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, filePath, src, parser.ParseComments)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse target file AST: %w", err)
+		return nil, fmt.Errorf("AST parse failed: %w", err)
 	}
 
 	var targetNode ast.Node
-
-	// Walk the AST to find the specific function declaration by full identity
 	ast.Inspect(file, func(n ast.Node) bool {
-		if n == nil {
-			return true
-		}
-
 		if fn, ok := n.(*ast.FuncDecl); ok {
-			// Reconstruct full PublicID for the node
-			candidateID := buildFuncPublicID(file, fn, filePath)
-			if candidateID == publicID {
+			if buildFuncPublicID(file, fn, filePath) == publicID {
 				targetNode = n
-				return false // Stop traversal, we found Patient Zero
+				return false
 			}
 		}
-
 		return true
 	})
 
 	if targetNode == nil {
-		return nil, fmt.Errorf("could not locate target node '%s' in the AST of %s", publicID, filePath)
+		return nil, fmt.Errorf("node %s not found in AST", publicID)
 	}
 
-	// Retrieve exact byte offsets safely
 	tFile := fset.File(targetNode.Pos())
-	if tFile == nil {
-		return nil, fmt.Errorf("failed to resolve token file for target node")
-	}
-
 	startOffset := tFile.Offset(targetNode.Pos())
 	endOffset := tFile.Offset(targetNode.End())
 
-	// Sanity bounds checks
-	if startOffset < 0 || endOffset < startOffset || endOffset > len(src) {
-		return nil, fmt.Errorf("invalid AST offsets computed for target node: start=%d, end=%d, fileLen=%d", startOffset, endOffset, len(src))
-	}
+	// Perform byte-level surgery
+	newSrc := make([]byte, 0, len(src)-int(endOffset-startOffset)+len(newCode))
+	newSrc = append(newSrc, src[:startOffset]...)
+	newSrc = append(newSrc, []byte(newCode)...)
+	newSrc = append(newSrc, src[endOffset:]...)
 
-	// Construct the new file by sandwiching the new code between the old unmutated parts
-	var buf bytes.Buffer
-	buf.Write(src[:startOffset])
-	buf.WriteString(newCode)
-	buf.Write(src[endOffset:])
-
-	// Run go/format (equivalent to 'go fmt') to ensure perfect indentation and check for syntax errors
-	formattedBytes, err := format.Source(buf.Bytes())
+	// 1. Initial format/syntax check
+	formatted, err := format.Source(newSrc)
 	if err != nil {
-		// Fail hard. If the LLM wrote bad syntax, we do NOT want to apply it to disk.
-		return nil, fmt.Errorf("code formatting/syntax verification failed: %w\nLLM generated invalid Go code", err)
+		return nil, fmt.Errorf("formatting failed: %w", err)
 	}
 
-	return formattedBytes, nil
+	// 2. Resolve imports
+	final, err := imports.Process(filePath, formatted, nil)
+	if err != nil {
+		return nil, fmt.Errorf("import resolution failed: %w", err)
+	}
+
+	// 3. FINAL VALIDATION: Parse the result one last time
+	verifyFset := token.NewFileSet()
+	if _, err := parser.ParseFile(verifyFset, filePath, final, parser.AllErrors); err != nil {
+		return nil, fmt.Errorf("post-splice parse validation failed: %w", err)
+	}
+
+	return final, nil
 }
 
-// buildFuncPublicID reconstructs the canonical SAAYN PublicID for a function or method AST node.
-// Format: "pkg.[*Receiver.]SymbolName[file.go]"
 func buildFuncPublicID(f *ast.File, fn *ast.FuncDecl, filePath string) string {
 	pkgName := f.Name.Name
 	baseFile := filepath.Base(filePath)
@@ -177,6 +182,5 @@ func buildFuncPublicID(f *ast.File, fn *ast.FuncDecl, filePath string) string {
 			}
 		}
 	}
-
 	return fmt.Sprintf("%s.%s%s[%s]", pkgName, receiver, fn.Name.Name, baseFile)
 }

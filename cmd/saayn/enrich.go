@@ -214,8 +214,13 @@ func enrichRegistry(
 ) EnrichmentStats {
 	stats := EnrichmentStats{}
 
+	// 🧠 V5 Progress Tracking
+	total := len(regManager.Registry.Nodes)
+	current := 0
+
 	for id := range regManager.Registry.Nodes {
-		processRegistryNode(ctx, regManager, id, liveNodes, liveASTMap, cfg, &stats)
+		current++
+		processRegistryNode(ctx, regManager, id, liveNodes, liveASTMap, cfg, &stats, current, total)
 	}
 
 	return stats
@@ -229,6 +234,8 @@ func processRegistryNode(
 	liveASTMap map[string]string,
 	cfg EnrichConfig,
 	stats *EnrichmentStats,
+	current int, // New Param
+	total int, // New Param
 ) {
 	node := regManager.Registry.Nodes[id]
 
@@ -249,6 +256,7 @@ func processRegistryNode(
 		return
 	}
 
+	// UI: Clear line and print header
 	fmt.Print("\r\033[2K")
 	printActiveNodeHeader(node)
 
@@ -257,7 +265,8 @@ func processRegistryNode(
 		fmt.Println("   ├─ 🔄 purpose reset")
 	}
 
-	fmt.Println("   ├─ 🔍 analyzing")
+	// 🧠 V5 Progress Display
+	fmt.Printf("   ├─ 🔍 analyzing [%d/%d]\n", current, total)
 
 	purpose, err := generateBusinessPurpose(
 		ctx,
@@ -284,11 +293,7 @@ func processRegistryNode(
 	time.Sleep(cfg.DelayDuration)
 }
 
-func syncNodeState(
-	regManager *genome.RegistryManager,
-	node *model.Node,
-	liveNodes []*model.Node,
-) bool {
+func syncNodeState(regManager *genome.RegistryManager, node *model.Node, liveNodes []*model.Node) bool {
 	logicChanged := false
 
 	for _, ln := range liveNodes {
@@ -296,20 +301,15 @@ func syncNodeState(
 			continue
 		}
 
-		if node.FilePath != ln.FilePath {
-			node.FilePath = ln.FilePath
-		}
-
 		newHash := regManager.NormalizeAndHash(ln)
+
 		if node.LogicHash != newHash {
 			logicChanged = true
 			node.LogicHash = newHash
 			node.BusinessPurpose = ""
 		}
-
 		break
 	}
-
 	return logicChanged
 }
 

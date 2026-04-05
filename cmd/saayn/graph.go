@@ -1,156 +1,179 @@
 package saayn
 
 import (
-	"bufio"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
-	"strings"
+	"path/filepath"
 
+	"github.com/saayn-agent/internal/astutil"
+	"github.com/saayn-agent/internal/genome/surgery"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
-
-	"github.com/saayn-agent/internal/genome/surgery"
 )
 
-var graphInputFile string
+var graphFile string
+var graphDir string
 
 var graphCmd = &cobra.Command{
 	Use:   "graph",
-	Short: "Analyze the blast radius of a surgery plan (V3 Stub)",
-	Long: `In V3, this command mocks the AST graph analysis. 
-In V4, it will deterministically find all callers of the target node 
-and hydrate them into the plan's context.`,
-	RunE: runGraph,
+	Short: "Analyze the blast radius of a planned surgery and hydrate context source code",
+	RunE:  runGraph,
 }
 
 func init() {
 	rootCmd.AddCommand(graphCmd)
-	graphCmd.Flags().StringVarP(&graphInputFile, "file", "f", "surgery.yaml", "Path to the surgery plan YAML")
+	graphCmd.Flags().StringVarP(&graphFile, "file", "f", "surgery.yaml", "Path to the surgery plan")
+	graphCmd.Flags().StringVarP(&graphDir, "dir", "d", ".", "Project root directory to trace")
 }
 
 func runGraph(cmd *cobra.Command, args []string) error {
-	fmt.Printf("🔍 Analyzing blast radius for %s...\n", graphInputFile)
+	fmt.Printf("🕸️ Initializing V4 Impact Engine for %s...\n", graphFile)
 
-	yamlBytes, err := os.ReadFile(graphInputFile)
+	// 1. Read and validate the drafted surgery plan
+	yamlBytes, err := os.ReadFile(graphFile)
 	if err != nil {
-		return fmt.Errorf("failed to read plan: %w", err)
+		return fmt.Errorf("failed to read plan: %w\n💡 Hint: Run 'saayn draft' first", err)
 	}
 
 	var plan surgery.SurgeryPlan
 	if err := yaml.Unmarshal(yamlBytes, &plan); err != nil {
-		return fmt.Errorf("failed to parse YAML: %w", err)
+		return fmt.Errorf("failed to parse plan YAML: %w", err)
 	}
 
-	if plan.Target.PublicID == "" {
-		return fmt.Errorf("invalid surgery plan: missing target.public_id")
+	targetID := plan.Target.PublicID
+	if targetID == "" {
+		return fmt.Errorf("invalid surgery plan: missing target PublicID")
 	}
 
-	mockAffectedCount := 2
-	mockCallers := []string{
-		"index.SyncIndex[sync.go]",
-		"saayn.runEnrich[enrich.go]",
+	fmt.Printf("🔎 Tracing callers for target: %s\n", targetID)
+
+	// 2. Delegate to our shared AST Tracer
+	callers, err := astutil.TraceCallers(graphDir, targetID)
+	if err != nil {
+		return fmt.Errorf("impact analysis failed: %w", err)
 	}
 
-	if mockAffectedCount > 0 {
-		fmt.Printf("\n⚠️  BLAST RADIUS ALERT: Changing %s impacts %d other nodes.\n",
-			plan.Target.PublicID, mockAffectedCount)
-		fmt.Println("Impacted nodes discovered:")
-		for _, c := range mockCallers {
-			fmt.Printf("  - %s\n", c)
+	// 3. Hydrate Source Code and map to Schema
+	seenCallers := make(map[string]bool)
+	var newContext []surgery.ContextNode
+
+	for _, caller := range callers {
+		// Dedupe by specific caller function, not just the whole file
+		dedupeKey := caller.FilePath + ":" + caller.CallingFunction
+		if seenCallers[dedupeKey] {
+			continue
 		}
+		seenCallers[dedupeKey] = true
 
-		fmt.Print("\nWould you like to hydrate these callers into the context? (y/N): ")
-		reader := bufio.NewReader(os.Stdin)
-		input, err := reader.ReadString('\n')
+		fmt.Printf("   ↳ Hydrating source code for caller: %s() in %s\n", caller.CallingFunction, filepath.Base(caller.FilePath))
+
+		// The Bridge: Extract the actual source code of the calling function
+		sourceCode, pkgName, err := extractCallerSource(caller.FilePath, caller.CallingFunction)
 		if err != nil {
-			return fmt.Errorf("failed to read user confirmation: %w", err)
+			fmt.Printf("      ⚠️ Warning: Failed to hydrate source for %s: %v\n", caller.CallingFunction, err)
+			continue
 		}
-		input = strings.ToLower(strings.TrimSpace(input))
 
-		if input != "y" {
-			fmt.Println("🛑 Analysis aborted by user. Plan remains unchanged.")
-			return nil
-		}
-	}
+		// Reconstruct the canonical SAAYN PublicID (pkg.Receiver.Func[file.go])
+		canonicalID := fmt.Sprintf("%s.%s[%s]", pkgName, caller.CallingFunction, filepath.Base(caller.FilePath))
 
-	plan.ImpactAnalysis = &surgery.ImpactAnalysis{
-		RiskLevel:     surgery.RiskHigh,
-		RiskReasoning: "STUB (V3): Target is a core utility used by synchronization loops and CLI handlers.",
-		RiskFactors: surgery.RiskFactors{
-			Visibility:        "public_api",
-			BoundaryCrossings: 1,
-			TransitiveDepth:   2,
-			TotalBlastRadius:  mockAffectedCount,
-		},
-	}
-
-	mockCallerNodes := []surgery.ContextNode{
-		{
+		// Map directly to the strict Schema
+		ctxNode := surgery.ContextNode{
 			TargetAnchor: surgery.TargetAnchor{
-				UUID:      "mock-uuid-999",
-				PublicID:  "index.SyncIndex[sync.go]",
-				FilePath:  "internal/genome/index/sync.go",
-				NodeType:  "function",
-				LogicHash: "mock-hash-abc",
+				PublicID: canonicalID,
+				FilePath: caller.FilePath,
+				NodeType: "function",
 			},
 			Reason:       surgery.ReasonKnownCaller,
-			ReasonDetail: "Invokes FetchEmbedding inside a batch processing loop.",
-			SourceCode: `func SyncIndex(path string) error {
-	// This is a stubbed caller context
-	fmt.Println("Syncing...")
-	_, err := FetchEmbedding(ctx, client, key, model, url, "sample")
-	return err
-}`,
-		},
-		{
-			TargetAnchor: surgery.TargetAnchor{
-				UUID:      "mock-uuid-888",
-				PublicID:  "saayn.runEnrich[enrich.go]",
-				FilePath:  "cmd/saayn/enrich.go",
-				NodeType:  "function",
-				LogicHash: "mock-hash-def",
-			},
-			Reason:       surgery.ReasonKnownCaller,
-			ReasonDetail: "Uses FetchEmbedding to index files during enrich command.",
-			SourceCode: `func runEnrich(cmd *cobra.Command, args []string) error {
-	// This is another stubbed caller context
-	fmt.Println("Enriching...")
-	vec, err := index.FetchEmbedding(ctx, client, key, model, url, content)
-	return err
-}`,
-		},
-	}
-
-	hydratedCount := 0
-	for _, mockNode := range mockCallerNodes {
-		if !hasContextNode(plan, mockNode.PublicID) {
-			plan.Context = append(plan.Context, mockNode)
-			hydratedCount++
+			ReasonDetail: fmt.Sprintf("Calls target at line %d", caller.LineNumber),
+			SourceCode:   sourceCode,
 		}
+
+		newContext = append(newContext, ctxNode)
 	}
 
-	if hydratedCount > 0 {
-		fmt.Printf("💧 Hydrated %d additional caller(s) into the plan.\n", hydratedCount)
-	}
+	// 4. Save the hydrated plan back to disk
+	plan.Context = append(plan.Context, newContext...)
 
-	newYaml, err := yaml.Marshal(&plan)
+	outBytes, err := yaml.Marshal(&plan)
 	if err != nil {
 		return fmt.Errorf("failed to marshal updated plan: %w", err)
 	}
 
-	if err := os.WriteFile(graphInputFile, newYaml, 0644); err != nil {
+	if err := os.WriteFile(graphFile, outBytes, 0644); err != nil {
 		return fmt.Errorf("failed to save updated plan: %w", err)
 	}
 
-	fmt.Println("✅ Surgery plan successfully updated with impact analysis.")
+	if len(newContext) == 0 {
+		fmt.Printf("✅ Impact Analysis Complete. Node is isolated. No extra context needed.\n")
+	} else {
+		fmt.Printf("✅ Impact Analysis Complete. Fully hydrated %d caller nodes into %s\n", len(newContext), graphFile)
+	}
+
 	return nil
 }
 
-func hasContextNode(plan surgery.SurgeryPlan, publicID string) bool {
-	for _, node := range plan.Context {
-		if node.PublicID == publicID {
-			return true
-		}
+// --- AST JIT Hydration ---
+
+// extractCallerSource parses a file and extracts the exact string block of a specific function.
+// It also returns the package name so we can build a canonical PublicID.
+func extractCallerSource(filePath, funcName string) (sourceCode string, pkgName string, err error) {
+	srcBytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", "", fmt.Errorf("could not read file: %w", err)
 	}
-	return false
+
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, filePath, srcBytes, 0)
+	if err != nil {
+		return "", "", fmt.Errorf("could not parse file: %w", err)
+	}
+
+	pkgName = file.Name.Name
+	var foundNode ast.Node
+
+	// Walk the AST to find the specific function declaration
+	ast.Inspect(file, func(n ast.Node) bool {
+		if fn, ok := n.(*ast.FuncDecl); ok {
+			// In V4 we match against the enclosing name (e.g. "runGraph" or "*User.Save")
+			if getFuncDeclName(fn) == funcName {
+				foundNode = fn
+				return false // stop searching
+			}
+		}
+		return true
+	})
+
+	if foundNode == nil {
+		return "", pkgName, fmt.Errorf("function '%s' not found in AST", funcName)
+	}
+
+	// Extract the exact byte slice using the token FileSet
+	start := fset.Position(foundNode.Pos()).Offset
+	end := fset.Position(foundNode.End()).Offset
+
+	if start < 0 || end > len(srcBytes) || start > end {
+		return "", pkgName, fmt.Errorf("invalid byte offsets computed for AST node")
+	}
+
+	return string(srcBytes[start:end]), pkgName, nil
+}
+
+// getFuncDeclName mimics astutil.funcDeclName to ensure we match receiver formats correctly
+func getFuncDeclName(fn *ast.FuncDecl) string {
+	if fn.Recv == nil || len(fn.Recv.List) == 0 {
+		return fn.Name.Name
+	}
+	switch t := fn.Recv.List[0].Type.(type) {
+	case *ast.StarExpr:
+		if ident, ok := t.X.(*ast.Ident); ok {
+			return "*" + ident.Name + "." + fn.Name.Name
+		}
+	case *ast.Ident:
+		return t.Name + "." + fn.Name.Name
+	}
+	return fn.Name.Name
 }
