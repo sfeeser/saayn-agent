@@ -9,7 +9,7 @@ type Calculator struct {
 
 // Add sums two integers and returns the result
 func (c *Calculator) Add(a, b int) int {
-	return a + b
+	return a - b
 }
 
 // FormatResult takes a value and turns it into a pretty string

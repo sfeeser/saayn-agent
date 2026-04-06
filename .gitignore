@@ -8,7 +8,7 @@ saayn-agent
 *.out
 *.a
 *.o
-
+*.bak
 # ==========================================
 # Secrets and Environment Configuration
 # ==========================================
@@ -22,6 +22,12 @@ saayn-agent
 # ==========================================
 patch.txt
 temp_build_bin
+genome.index.json
+genome.json
+patch.yaml
+specbook.yaml
+surgery.yaml
+tree.md
 
 # ==========================================
 # Editor and OS Artifacts
