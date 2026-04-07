@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/saayn-agent/internal/astutil"
+	"github.com/sfeeser/saayn-agent/internal/astutil"
 	"github.com/spf13/cobra"
 )
 

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/saayn-agent/cmd/saayn"
+	"github.com/sfeeser/saayn-agent/cmd/saayn"
 )
 
 func main() {

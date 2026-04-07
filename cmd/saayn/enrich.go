@@ -18,10 +18,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	"github.com/saayn-agent/internal/genome"
-	"github.com/saayn-agent/internal/genome/index"
-	"github.com/saayn-agent/internal/scanner"
-	"github.com/saayn-agent/pkg/model"
+	"github.com/sfeeser/saayn-agent/internal/genome"
+	"github.com/sfeeser/saayn-agent/internal/genome/index"
+	"github.com/sfeeser/saayn-agent/internal/scanner"
+	"github.com/sfeeser/saayn-agent/pkg/model"
 	"github.com/spf13/cobra"
 )
 
@@ -198,7 +198,7 @@ func adoptNewNodes(regManager *genome.RegistryManager, liveNodes []*model.Node) 
 
 		newUUID := uuid.New().String()
 		liveNode.UUID = newUUID
-		regManager.Registry.Nodes[newUUID] = *liveNode
+		regManager.Registry.Nodes[newUUID] = liveNode
 		syncCount++
 	}
 
@@ -248,7 +248,7 @@ func processRegistryNode(
 		return
 	}
 
-	logicChanged := syncNodeState(regManager, &node, liveNodes)
+	logicChanged := syncNodeState(regManager, node, liveNodes)
 
 	if !logicChanged && node.BusinessPurpose != "" {
 		stats.SkippedAlready++
@@ -258,7 +258,7 @@ func processRegistryNode(
 
 	// UI: Clear line and print header
 	fmt.Print("\r\033[2K")
-	printActiveNodeHeader(node)
+	printActiveNodeHeader(*node)
 
 	if logicChanged {
 		fmt.Println("   ├─ 🧬 logic changed")

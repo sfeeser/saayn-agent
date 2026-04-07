@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/saayn-agent/pkg/model"
+	"github.com/sfeeser/saayn-agent/pkg/model"
 )
 
 // SyncStats provides telemetry for the indexing process.
@@ -18,10 +18,11 @@ type SyncStats struct {
 
 // SyncIndex synchronizes the IndexStore with the current state of the Genome Registry.
 // It handles metadata validation, drift detection, embedding retrieval, and stale record cleanup.
+
 func SyncIndex(
 	ctx context.Context,
 	store *IndexStore,
-	nodes map[string]model.Node,
+	nodes map[string]*model.Node, // <--- THE FIX (Add the asterisk)
 	apiKey, modelName, baseURL string,
 ) (SyncStats, error) {
 	stats := SyncStats{}

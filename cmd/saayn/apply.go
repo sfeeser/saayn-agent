@@ -13,7 +13,7 @@ import (
 	"golang.org/x/tools/imports"
 	"gopkg.in/yaml.v3"
 
-	"github.com/saayn-agent/internal/genome/surgery"
+	"github.com/sfeeser/saayn-agent/internal/genome/surgery"
 )
 
 var applyInputFile string

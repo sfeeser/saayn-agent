@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/saayn-agent/internal/astutil"
-	"github.com/saayn-agent/internal/genome/surgery"
+	"github.com/sfeeser/saayn-agent/internal/astutil"
+	"github.com/sfeeser/saayn-agent/internal/genome/surgery"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )

@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
-	"github.com/saayn-agent/internal/genome"
-	"github.com/saayn-agent/internal/genome/index"
-	"github.com/saayn-agent/internal/genome/surgery"
+	"github.com/sfeeser/saayn-agent/internal/genome"
+	"github.com/sfeeser/saayn-agent/internal/genome/index"
+	"github.com/sfeeser/saayn-agent/internal/genome/surgery"
 )
 
 var draftOutputFile string

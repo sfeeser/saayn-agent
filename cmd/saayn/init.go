@@ -3,8 +3,8 @@ package saayn
 import (
 	"fmt"
 
-	"github.com/saayn-agent/internal/genome"
-	"github.com/saayn-agent/internal/scanner"
+	"github.com/sfeeser/saayn-agent/internal/genome"
+	"github.com/sfeeser/saayn-agent/internal/scanner"
 	"github.com/spf13/cobra"
 )
 

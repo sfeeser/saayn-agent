@@ -105,3 +105,8 @@ func FetchEmbedding(ctx context.Context, client *http.Client, apiKey, modelName,
 
 	return res.Embedding.Values, nil
 }
+
+func GenerateCompletion(prompt string, modelType string) (string, error) {
+	// ... your logic to call Gemini or another LLM ...
+	return "generated code", nil
+}

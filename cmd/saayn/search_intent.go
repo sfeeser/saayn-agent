@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
-	"github.com/saayn-agent/internal/genome/index"
+	"github.com/sfeeser/saayn-agent/internal/genome/index"
 	"github.com/spf13/cobra"
 )
 

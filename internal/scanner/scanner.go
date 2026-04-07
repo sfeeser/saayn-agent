@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/saayn-agent/pkg/model"
+	"github.com/sfeeser/saayn-agent/pkg/model"
 )
 
 // FullScan walks the directory and extracts all functional and structural nodes
