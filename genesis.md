@@ -114,6 +114,27 @@ The Identity Triad (PublicID, Fingerprint, Logic Hash) ensures that your project
 2. Spawn: Run saayn genesis.
 3. Stop coding in the dark. Start sequencing your genome.
 
+
+### The 4-State Genome State Machine
+
+| Genome State | What It Does (Action & Focus) | Who Is In Charge? | Agent Guardrails (Strict Enforcement) |
+| :--- | :--- | :--- | :--- |
+| **1. Conceptual** | Defines the "Gallery." Debates and locks in the `business_purpose` and architectural boundaries of the package. | Actor/Critic (DEEP) | **No Code Allowed:** The agent must reject any payload containing Go code. <br><br>**Dependency Lock:** If the LLM requests a dependency not in the Gallery, the agent pauses all states and forces the new dependency through State 1 first. |
+| **2. Hollow (Canvas)** | Generates the structural topography. Writes interfaces, empty structs, and zero-return functions to satisfy the compiler. | Skeleton Builder (FAST) | **Zero-Logic Rule:** The agent must reject the AST payload if it detects any logic loops (`for`, `if`), variable assignments, or non-empty struct fields.<br><br>**Physics Gate:** Must compile perfectly before advancing to State 3. |
+| **3. Hydrating** | The surgical phase. Analyzes the hollow signatures and writes the actual execution logic, algorithms, and data routing. | Surgeon (DEEP) | **State 1 Isolation:** The agent must physically block the LLM from calling any package that is still in State 1.<br><br>**Signature Lock:** If the Surgeon tries to change a function signature established in State 2, the agent rejects the patch and forces a Canvas re-stretch. |
+| **4. Sequenced** | The logic is written, the AST passes, and the code fulfills the semantic intent of the `specbook.yaml`. | CC Agent (Local orchestrator) | **Hash Locking:** The agent calculates and commits the final Identity Triad to `genome.json`.<br><br>**Drift Detection:** If a human manually edits the file later, the hash breaks, and the agent automatically drops the node back to State 3. |
+
+---
+
+### Why the "Signature Lock" Guardrail is the Masterstroke
+
+If you look at State 3, the **Signature Lock** is the most critical guardrail your agent enforces. 
+
+When the DEEP model is writing the logic inside `StartWorker()`, it might get frustrated and try to change the function signature to make its life easier (e.g., adding `context.Context` when it wasn't in the skeleton). 
+
+If the CC Agent allows that, it breaks the AST for every *other* file that is currently relying on the original hollow signature. By enforcing the Signature Lock, the CC Agent acts like a strict project manager: *"You cannot change the contract without scheduling a meeting with the rest of the architecture."* <FollowUp label="Want to map out the 'Signature Lock' override protocol?" query="If the DEEP model genuinely needs to change a signature in State 3 because the FAST model made a mistake in State 2, how does the CC Agent safely handle that without breaking the AST?" />
+
+
 If you made it this far, then here is the real vision:
 
 ```
