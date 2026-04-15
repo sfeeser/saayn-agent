@@ -35,6 +35,8 @@ Table of Contents
     3. Verification CLI: Auditing the project post-Genesis.
 8. Safeguards & Defensive Protocols
 
+10. Scope & Authorit
+
 This structure ensures that we define the Physical Laws (AST/Physics) before we ever allow the Cognitive Brain (LLM) to touch the code. It treats MCP as the "Docking Port" that allows us to plug in any LLM while maintaining 100% control over the local filesystem.
 
 
@@ -724,5 +726,437 @@ func BuildPublicID(pkgPath, receiver, symbol string, typeParams []string) (Publi
 	return id, nil
 }
 ```
+
+## **9. Architectural Preflight (Design-Time Discipline)**
+
+Chapter 9 defines the **mandatory preflight protocol** that must be satisfied before the Genesis Engine is allowed to execute. This chapter exists to preserve the deterministic guarantees of Chapters 1–8 by isolating all non-deterministic reasoning, critique, and architectural negotiation **outside** the runtime system.
+
+> **Law:** Genesis executes. It does not debate.
+
+
+### **9.0. Preflight Gate (Mandatory Blocker)**
+
+The command `saayn genesis` **MUST NOT** execute unless the Specbook has passed the Architectural Preflight.
+
+* **Scope:** Entire `specbook.yaml` and all referenced artifacts (`vision.md`, dependency graph, node definitions).
+* **Authority:** Human Architect (with optional LLM assistance).
+* **Outcome:** `PreflightStatus = PASS | FAIL`
+* **Enforcement:** If `FAIL`, Genesis is **blocked**. No partial execution is permitted.
+
+
+### **9.1. Preflight Checklist (Normative)**
+
+All checks are **binary**. There is no scoring. Any violation results in **FAIL**.
+
+#### **A. State Machine Integrity**
+
+* Exactly **5 states** are defined (1–5). No additional states (e.g., State 0) are permitted.
+* **State 4** is explicitly defined as **transient**.
+* Entry and exit gates for each state are unambiguous and consistent across all chapters.
+* No contradictory semantics exist between chapters (e.g., persistence vs. transience).
+
+#### **B. Dependency Graph Validity**
+
+* The package graph is a **Directed Acyclic Graph (DAG)**.
+* No cyclic imports exist or are implied.
+* Control flow direction is strictly top-down:
+
+  * `orchestrator → metamorphosis → (surgeon, audit)`
+* **No upward dependencies** (e.g., `metamorphosis` importing `orchestrator`).
+* Sibling isolation is preserved:
+
+  * `surgeon` and `audit` must not import each other.
+
+#### **C. Authority Stack Consistency**
+
+* **Specbook** is the sole authority for structure and contracts.
+* **Genome** reflects only sequenced reality (State 5).
+* **Vision** is descriptive only and cannot override structure.
+* All dispute rules (Intent Override, Drift Rule, Logic Rule) are consistent and non-conflicting.
+
+#### **D. Identity Triad Completeness**
+
+* **PublicID grammar** is fully defined and consistently used.
+* **Fingerprint normalization** rules are complete and unambiguous.
+* **Logic Hash canonicalization** is deterministic and reproducible.
+* No node definition omits required identity fields.
+
+#### **E. MCP Boundary Enforcement**
+
+* No internal package depends on `mcp`.
+* `mcp` is the outermost boundary layer.
+* All mutations occur via MCP tools only.
+* Resource and tool URIs use **Canonical PublicID**, not legacy identifiers.
+
+#### **F. Acceptance Envelope Consistency**
+
+* Gate order is strictly defined:
+
+  * Signature → Physics → Behavioral → Cognitive
+* Gate definitions are consistent across all chapters.
+* Failure protocols always result in **retreat to State 3** (or State 1 for structural invalidation).
+* No gate introduces probabilistic outcomes.
+
+#### **G. Transaction Model Integrity**
+
+* All mutations are **atomic, staged, and idempotent**.
+* No operation mutates the authoritative filesystem prior to full validation.
+* Crash recovery behavior is defined and consistent.
+
+### **9.2. Failure Handling (Hard Stop Protocol)**
+
+If any Preflight check fails:
+
+* **Genesis is blocked.**
+* The system must not:
+
+  * Create files
+  * Modify `genome.json`
+  * Start MCP services
+* The Architect must:
+
+  * Correct the Specbook
+  * Re-run Preflight
+
+There is no override flag.
+
+### **9.3. Allowed Preflight Methods (Non-Normative)**
+
+Preflight may be performed using:
+
+* Manual architectural review
+* Diagram validation
+* LLM-assisted critique (e.g., creator/critic exchange)
+* Static analysis tools
+
+> **Constraint:** These methods are **advisory only**.
+> The Genesis Engine does not consume or execute them.
+
+### **9.4. Separation of Concerns (Critical Boundary)**
+
+The system is divided into two distinct domains:
+
+| Domain                     | Responsibility                                   |
+| -------------------------- | ------------------------------------------------ |
+| **Preflight (Chapter 9)**  | Design validation, critique, normalization       |
+| **Genesis (Chapters 1–8)** | Deterministic execution and code materialization |
+
+> **Law:** No Preflight logic may be embedded inside the Genesis Engine.
+
+
+### **9.5. Rationale (Non-Normative)**
+
+The Preflight protocol exists to:
+
+* Eliminate architectural contradictions before execution
+* Preserve deterministic guarantees during runtime
+* Prevent non-reproducible behavior from entering the system
+* Maintain clear boundaries between **thinking** and **execution**
+
+
+### **9.6. Operational Workflow**
+
+1. Author or modify `specbook.yaml`
+2. Execute Architectural Preflight (manual or assisted)
+3. Resolve all violations
+4. Mark Specbook as **Preflight PASS**
+5. Execute:
+
+   ```bash
+   saayn genesis
+   ```
+
+## **10. Package Topology & Dependency Law (Normative Architecture)**
+
+Chapter 10 defines the **canonical package topology** and the **non-bypassable dependency rules** for the Genesis Engine. This chapter is **normative** and **machine-enforceable**. It establishes the allowed structure of the codebase and the only valid directions of control and data flow.
+
+> **Law:** If the package graph violates this chapter, the system is invalid. Preflight MUST fail.
+
+---
+
+## **10.0. Scope & Authority**
+
+* This chapter defines:
+
+  * The complete **package set**
+  * The **allowed dependency directions**
+  * The **forbidden edges**
+  * The **layered execution model**
+* This chapter is the **source of truth** for:
+
+  * Preflight validation (Chapter 9)
+  * Specbook DAG enforcement
+  * Import graph correctness
+
+---
+
+## **10.1. Canonical Package Set (Closed World)**
+
+The Genesis Engine operates under a **closed-world assumption**. Only the following packages are permitted:
+
+```
+internal/identity
+internal/spec
+internal/genome
+internal/scanner
+internal/staging
+internal/surgeon
+internal/audit
+internal/metamorphosis
+internal/orchestrator
+internal/auditlog
+internal/mcp
+cmd/saayn
+```
+
+### **Constraints**
+
+* No additional internal packages may be introduced without updating this chapter.
+* All nodes defined in `specbook.yaml` MUST resolve to one of these packages.
+* Package names are **case-sensitive and fixed**.
+
+---
+
+## **10.2. Layered Architecture Model**
+
+The system is organized into strict layers. Dependencies must only flow **downward**.
+
+| Layer                         | Packages                       | Responsibility                               |
+| ----------------------------- | ------------------------------ | -------------------------------------------- |
+| **L1 – Identity**             | `identity`                     | Canonical identity, hashing, structural laws |
+| **L2 – Definition**           | `spec`, `genome`               | Desired state and persisted state            |
+| **L3 – Sensory**              | `scanner`                      | Extract phenotype from code                  |
+| **L4 – Isolation**            | `staging`                      | Staged mutation workspace                    |
+| **L5 – Execution (Siblings)** | `surgeon`, `audit`, `auditlog` | Mutation, verification, observability        |
+| **L6 – State Machine**        | `metamorphosis`                | Single-node lifecycle controller             |
+| **L7 – Orchestration**        | `orchestrator`                 | DAG traversal and scheduling                 |
+| **L8 – Transport Boundary**   | `mcp`                          | External interface                           |
+| **L9 – Entry Point**          | `cmd/saayn`                    | CLI bootstrap                                |
+
+---
+
+## **10.3. Canonical Dependency Graph**
+
+The only valid dependency direction is:
+
+```text
+identity
+
+spec        genome
+  \          /
+   \        /
+    scanner
+
+staging
+
+surgeon     audit     auditlog
+    \        /
+     \      /
+   metamorphosis
+         |
+    orchestrator
+         |
+        mcp
+         |
+     cmd/saayn
+```
+
+---
+
+## **10.4. Dependency Rules (Non-Bypassable)**
+
+### **10.4.1. Downward-Only Rule**
+
+* A package may only depend on:
+
+  * itself
+  * packages in **lower layers**
+* Upward dependencies are **forbidden**
+
+---
+
+### **10.4.2. Identity Root Rule**
+
+* `internal/identity`:
+
+  * has **no dependencies**
+  * may be imported by any package
+
+---
+
+### **10.4.3. Spec & Genome Isolation**
+
+* `internal/spec` and `internal/genome`:
+
+  * must not depend on execution packages
+  * must not import:
+
+    * `metamorphosis`
+    * `orchestrator`
+    * `mcp`
+
+---
+
+### **10.4.4. Scanner Constraint**
+
+* `internal/scanner` may depend on:
+
+  * `identity`
+  * `spec` (optional)
+  * `genome` (read-only)
+* Must not depend on:
+
+  * `surgeon`
+  * `audit`
+  * `metamorphosis`
+
+---
+
+### **10.4.5. Staging Isolation Rule**
+
+* `internal/staging`:
+
+  * must not depend on any execution logic
+  * must be importable by:
+
+    * `surgeon`
+    * `audit`
+    * `metamorphosis`
+
+---
+
+### **10.4.6. Execution Sibling Isolation**
+
+* `internal/surgeon`, `internal/audit`, `internal/auditlog`:
+
+  * must not import each other
+  * may depend on:
+
+    * `identity`
+    * `staging`
+
+---
+
+### **10.4.7. Metamorphosis Control Rule**
+
+* `internal/metamorphosis`:
+
+  * may depend on:
+
+    * `surgeon`
+    * `audit`
+    * `identity`
+* must not depend on:
+
+  * `orchestrator`
+  * `mcp`
+* must return **typed errors** for:
+
+  * `ErrJITMountRequired`
+  * `ErrIterationExhausted`
+  * `ErrUndeclaredDependency`
+
+---
+
+### **10.4.8. Orchestrator Authority Rule**
+
+* `internal/orchestrator`:
+
+  * may depend on:
+
+    * `spec`
+    * `metamorphosis`
+* owns:
+
+  * DAG traversal
+  * JIT dependency resolution
+* must not be imported by:
+
+  * `metamorphosis`
+  * any lower layer
+
+---
+
+### **10.4.9. MCP Boundary Rule**
+
+* `internal/mcp`:
+
+  * is the **outermost boundary**
+  * may depend on:
+
+    * `orchestrator`
+    * `auditlog`
+* must not be imported by:
+
+  * any internal package
+
+---
+
+### **10.4.10. CLI Entry Rule**
+
+* `cmd/saayn`:
+
+  * may depend only on:
+
+    * `mcp`
+* contains no business logic
+
+---
+
+## **10.5. Forbidden Dependency Patterns**
+
+The following are **hard violations**:
+
+| Pattern                        | Reason                              |
+| ------------------------------ | ----------------------------------- |
+| `metamorphosis → orchestrator` | Creates control cycle               |
+| `surgeon ↔ audit`              | Collapses mutation and verification |
+| `auditlog → mcp`               | Inverts observability boundary      |
+| `internal → mcp`               | Breaks transport isolation          |
+| Cyclic imports                 | Breaks Go compiler and DAG          |
+| Cross-layer upward calls       | Violates execution model            |
+
+---
+
+## **10.6. Preflight Enforcement (Binding to Chapter 9)**
+
+Chapter 9 MUST validate:
+
+* Package set matches **exactly** this list
+* All imports conform to Section 10.4 rules
+* No forbidden patterns exist
+* Graph is a valid DAG
+
+If any violation is detected:
+
+* **Preflight = FAIL**
+* Genesis is **blocked**
+
+---
+
+## **10.7. Extensibility Rule**
+
+To introduce a new package:
+
+1. Update this chapter
+2. Define its layer
+3. Define allowed dependencies
+4. Re-run Preflight
+
+> No implicit package growth is allowed.
+
+---
+
+## **10.8. Rationale (Non-Normative)**
+
+This topology enforces:
+
+* Deterministic execution
+* Clean separation of concerns
+* Compiler-safe dependency graph
+* Isolation of mutation, audit, and orchestration
+* Strict boundary between internal logic and external interface
+
+
 
 
