@@ -76,8 +76,13 @@ Once the Canvas is dropped to disk, the local SAAYN Agent uses `dave/dst` (Decor
       // --- GENOMIC CONTENT ---
       "gene": "Recursively parses Go files into AST nodes. Excludes whitespace/comments from hash. Must handle symlinks.",
       "business_purpose": "The primary sensory organ for identifying code identity and logic drift.",
-      
+
       // --- DEPENDENCY GRAPH ---
+      // NOTE: Evolution of this field:
+      // STATE 1-2: Predicted/Spec-bound (Used to build the Roadmap/DAG).
+      // STATE 3:   Dynamic (Updated via JIT Canvas Mounting if Surgeon adds calls).
+      // STATE 4:   AST-Derived (The Final Truth). Must be extracted via go/ast 
+      //            to verify it matchesauthorized boundaries.
       "dependencies": [
         "pkg.internal.model.Node",
         "pkg.internal.astutil.CalculateHash"
