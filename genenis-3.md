@@ -265,98 +265,105 @@ The `internal/metamorphosis` controller enforces the following movement rules:
 
 ## **4. The Surgical Inner Loop (The Immune System)**
 
-Chapter 4 defines the active verification engine that powers the Genesis transitions. This "Immune System" is a set of autonomous audits that protect the project from structural decay, behavioral drift, and "hallucinated" logic. If a node cannot pass through these four gates, it is physically impossible for it to be committed to the disk.
+Chapter 4 defines the **Acceptance Envelope**: a strict, fail-fast sequence of audits that guards the transition from **State 3 (Anchored)** to **State 5 (Sequenced)**.
 
-### **4.1. Gate 1: The Physics Audit (Structural Integrity)**
-* **Tooling:** `go/ast` and `dave/dst`
-* **Purpose:** To ensure the code adheres to the laws of the Go language and the project's internal anatomy.
-* **Execution:** Before any logic is reviewed, the local SAAYN agent performs a **Structural Walk**. It verifies:
-    * **Syntax Lock:** Does the code parse? (No missing brackets or illegal characters).
-    * **Interface Compliance:** If the node is a struct, does it satisfy the interfaces defined in the **Hollow Canvas**?
-    * **Import Hygiene:** Are all imports utilized and authorized by the Specbook?
-* **Failure Protocol:** If the Physics Audit fails, the draft is instantly rejected. The agent sends the raw compiler error back to the Surgeon for immediate re-materialization.
+### **4.0. The Staged Mutation Protocol**
+To maintain filesystem integrity, all audits (Gates 1–4) operate on a **Staged Mutation**. 
+* **The Rule:** No changes are committed to the project's physical source code until the candidate patch has cleared every gate in the sequence. 
+* **The Sandbox:** Audits are performed in a temporary, package-scoped workspace.
 
-### **4.2. Gate 2: The Behavioral Audit (The Vacuum Gate)**
-* **Tooling:** `go test -v`
-* **Purpose:** To transform the **Black Box Trust** into a physical reality.
-* **Execution:** This gate operates in two distinct modes:
-    1.  **Phase 3 (Anchor):** The audit *must fail*. We confirm that the test runner successfully identifies the missing logic. This proves the test is "live."
-    2.  **Phase 4 (Hydration):** The audit *must pass*. The Surgeon's logic is executed against the table-driven test cases. 
-* **Failure Protocol:** If `go test` returns a non-zero exit code during hydration, the **stdout/stderr** logs are captured and fed into the Remediation Cycle as high-signal feedback.
+### **4.1. Gate 1: Signature Lock (Pre-Surgical)**
+* **Requirement:** The `Fingerprint` of the proposed logic patch must match the `Fingerprint` stored in the `genome.json` registry.
+* **Execution:** Performed via AST analysis of the patch string *before* any workspace mutation.
+* **Failure:** Immediate rejection. The engine flags a **ContractViolation**. **Action:** Halt and signal the Surgeon to align with the locked signature.
 
-### **4.3. Gate 3: The Cognitive Audit (Intent Alignment)**
-* **Tooling:** Vector Similarity (`genome.index.json`) + LLM Evaluator
-* **Purpose:** To ensure the code does what the **Gene** says it should do, not just what the compiler allows.
-* **Execution:** The system compares the materialized logic against the **Gene** (State 1 intent) and the **Vision** (README).
-    * **Drift Detection:** "The Gene requires exponential backoff, but the implementation uses a linear sleep. **REJECTED.**"
-    * **Semantic Scoring:** The node is assigned a "Cognitive Score." A score below 0.85 triggers an automatic remediation, even if the tests pass.
-* **Failure Protocol:** The Evaluator provides a "Finding" (e.g., "Missing context-aware cancellation") which is used to refine the next iteration of the code.
+### **4.2. Gate 2: Physics Audit (Structural & Package Integrity)**
+* **Requirement:** 1. **Syntax:** `go/parser` verifies the patch is syntactically valid Go.
+    2. **Package Integrity:** `go build ./path/to/package/...` verifies that the mutation does not break package-level compilation or neighbor-node dependencies.
+* **Failure:** **Action:** Capture compiler/linker errors and retreat to State 3 for remediation.
 
-### **4.4. Gate 4: The Signature Lock (The Contract Protector)**
-* **Tooling:** Fingerprint Matching
-* **Purpose:** To prevent "Recursive Collateral Damage."
-* **Execution:** The engine compares the **Fingerprint** of the new patch against the Fingerprint locked in the **Hollow State**. 
-    * **The Law:** The Surgeon is allowed to change *how* the function works, but never *what* the function looks like to the rest of the world.
-* **Failure Protocol:** If a Signature Mismatch is detected, the CC Agent blocks the splice. It forces a **Canvas Re-stretch**, requiring the architect to acknowledge that changing this signature will affect every dependent node in the DAG.
+### **4.3. Gate 3: Behavioral Audit (The Vacuum)**
+* **Requirement:** `go test -v -run ^Test_[PublicID]$`
+* **Execution:** Executes the deterministic, node-scoped test suite generated during State 3.
+* **Pass Condition:** `Exit 0`. The logic must satisfy all table-driven test cases.
+* **Failure:** **Action:** Capture `stdout/stderr` stack traces and retreat to State 3.
 
-### **4.5. The Remediation Cycle (Self-Healing)**
-If any gate fails, the node enters the **Remediation Cycle**. 
-1.  **Feedback Synthesis:** The CC Agent aggregates Physics errors, Test failures, and Cognitive findings.
-2.  **Context Injection:** The Surgeon is handed its previous (failed) attempt and the aggregate feedback.
-3.  **Iteration Cap:** The loop allows for a maximum of **3 iterations**. If Equilibrium is not reached by the third attempt, the system "Freezes" the node and alerts the Human Architect for manual intervention.
+### **4.4. Gate 4: Cognitive Audit (Intent Alignment)**
+* **Requirement:** The LLM Evaluator compares the candidate AST against the **Gene** and **Vision**.
+* **Pass Condition:** **Zero "Critical Intent Violations."** (e.g., missing error handling or incorrect algorithmic scaling).
+* **Advisory:** A "Cognitive Score" (0.0–1.0) is recorded for metadata and logging but does not supersede the boolean pass/fail.
+* **Failure:** **Action:** Convert "Findings" into a prompt and retreat to State 3.
+
+### **4.5. The Remediation Cycle (The 3-Iteration Cap)**
+The system allows a maximum of **3 attempts** per node to clear the Acceptance Envelope.
+1. **Attempt 1:** Standard Gene-based hydration.
+2. **Attempt 2/3:** Augmented prompt containing the aggregated failure logs from previous gates.
+3. **Exhaustion:** If Attempt 3 fails, the node remains in **State 3** and is flagged as **Blocked**. 
+    * **The Freeze:** The "Genesis Chain" for all dependent nodes is paused.
+    * **The Resolution:** Requires a human architect to either refine the **Gene** or manually clear the audit.
+
+---
+ 
+This is the finalized, **Locked Version of Chapter 5**. The pseudo-logic and responsibilities have been strictly decoupled, ensuring the **Scanner** remains a pure sensory organ while the **Controller** manages state transitions.
+
+---
 
 ## **5. Tooling & Sensory Organs**
 
-Chapter 5 details the specialized internal mechanisms that allow SAAYN-Agent v6 to interact with physical source code. These are the "hands" and "eyes" of the Genesis Engine, moving beyond simple text manipulation into the realm of **AST-native orchestration**.
+Chapter 5 defines the specialized internal mechanisms that allow SAAYN-Agent v6 to interact with physical source code. These are the "hands" and "eyes" of the engine, moving beyond text manipulation into **AST-native orchestration**.
 
 ### **5.1. The Scanner: The Sensory Organ**
 * **Primary Tool:** `go/ast` & `go/parser`
-* **Responsibility:** The Scanner is responsible for **Phenotype Extraction**. It reads the local filesystem and translates raw `.go` files into the structured data required for the `genome.json`.
+* **Responsibility:** The Scanner performs **Phenotype Extraction**. It implements the canonicalization laws from Chapter 1 to translate raw `.go` files into structured registry data.
 * **The Identity Extraction:**
-    * **PublicID Retrieval:** It walks the AST to find function declarations and receiver types to build the `Package.Receiver.Func` string.
-    * **Fingerprint Calculation:** It normalizes parameter names to types only (e.g., `func(string) error`) to create a collision-proof structural signature.
-    * **Logic Hashing:** It extracts the `*ast.BlockStmt` (the function body), strips whitespace and comments, and generates a SHA-256 hash. This allows SAAYN to detect a "Logic Mutation" even if a human only changed the indentation.
+    * **PublicID Retrieval:** Derives the canonical ID using the Chapter 1 grammar: `<visibility>.<package_path>.<receiver_or_type_optional>.<symbol_name>`.
+    * **Fingerprint Calculation:** Normalizes the node signature by stripping parameter names, ignoring named returns, and resolving all types to their **fully qualified import paths** via `go/types`.
+    * **Logic Hashing:** Extracts the `*ast.BlockStmt`, removes comments, remaps local-scope variables to a stable sequence (`v1`, `v2`, ...), and generates a SHA-256 hash of the canonical AST serialization.
+
+
 
 ### **5.2. The Surgeon: The Splicing Mechanism**
 * **Primary Tool:** `dave/dst` (Decorated Syntax Tree)
-* **Responsibility:** The Surgeon performs the **Hydration Surgery**. While standard AST is "lossy" (it discards comments), DST preserves the "Soul" of the code (human-written documentation and intent markers).
-* **The Splicing Protocol:**
-    1.  **Targeting:** The Surgeon uses the `PublicID` to find the exact coordinates of the Hollow stub within the DST.
-    2.  **Validation:** It performs a pre-surgical check to ensure the existing `Fingerprint` matches the `genome.json`.
-    3.  **Injection:** It replaces the empty `*dst.BlockStmt` of the stub with the hydrated logic generated by the DEEP model.
-    4.  **Preservation:** It re-anchors any "hanging" comments from the original stub to the new implementation logic, ensuring the "Intent" remains attached to the "Action."
+* **Responsibility:** The Surgeon performs the **Hydration Surgery**. It preserves the "Soul" of the code (comments and intent markers) during logic injection.
+* **The Staged Splicing Protocol:**
+    1.  **Isolation:** The Surgeon **never** mutates the authoritative project filesystem directly. It operates exclusively within the **Staged Mutation Workspace** defined in Chapter 4.
+    2.  **Targeting:** Uses the canonical PublicID to resolve the target declaration node within the DST of the staged package.
+    3.  **Validation:** Performs a **Pre-Surgical Signature Lock** check. If the proposed patch's fingerprint deviates from the registry, the surgery is aborted.
+    4.  **Injection & Preservation:** Replaces the empty `*dst.BlockStmt` of the State 2 stub with hydrated logic while re-anchoring "hanging" comments from the original stub to the new implementation.
 
 ### **5.3. The JIT Orchestrator: The Central Nervous System**
-* **Responsibility:** Managing the **Build Order** and recursive dependencies.
-* **The Freeze-and-Mount Logic:**
-    * During State 4 (Hydration), if the Surgeon encounters a call to an undefined node, the Orchestrator interrupts the process.
-    * It places the current node into a **Wait State**.
-    * It triggers the **FAST Model** to "Mount" a State 2 Hollow Canvas for the missing dependency.
-    * Once the dependency passes the Physics Audit, the Orchestrator signals the Surgeon to resume. This ensures the Surgeon never writes code against an interface that hasn't been "physically" verified.
+* **Responsibility:** Managing the **Build Order** and recursive dependencies via transaction control.
+* **The Intercept Logic:**
+    * **JITMountRequired:** If the Surgeon (State 4) references a project symbol declared in the Specbook but currently in **State 1**, the Orchestrator **suspends the hydration transaction**. It mounts the dependency at State 2 and verifies it before signaling the Surgeon to resume.
+    * **UndeclaredDependencyViolation:** If the Surgeon references a project symbol **not** found in the Specbook, the patch is rejected immediately as a structural violation.
 
-### **5.4. The Identity Triad Verification Logic**
+### **5.4. Identity Triad Verification Helper**
 
-The following Go-pseudo-logic represents how the Scanner verifies the **Identity Triad** during a Genomic Audit:
+The following Go-pseudo-logic represents the normative verification helper used by the Scanner to detect drift during a Genomic Audit:
 
 ```go
-func (s *Scanner) VerifyNode(node *dst.FuncDecl) (bool, error) {
+func (s *Scanner) VerifyFunction(node *dst.FuncDecl, record GenomeNode) error {
+    // 1. Identity Check
+    currentPublicID := s.ExtractPublicID(node)
+    if currentPublicID != record.PublicID {
+        return ErrIdentityMismatch // Registry PublicID mismatch
+    }
+
+    // 2. Signature Check
     currentFingerprint := s.ExtractFingerprint(node)
+    if currentFingerprint != record.Fingerprint {
+        return ErrSignatureMismatch // Registry fingerprint mismatch
+    }
+
+    // 3. Logic Hash Verification
     currentHash := s.CalculateLogicHash(node.Body)
-
-    // Gate 1: Signature Lock
-    if currentFingerprint != genome.Fingerprint {
-        return false, ErrSignatureMismatch // Triggers State 2 Re-stretch
+    if currentHash != record.LogicHash {
+        return ErrLogicDrift // Registry logic hash mismatch
     }
 
-    // Gate 2: Drift Detection
-    if currentHash != genome.LogicHash {
-        return false, ErrLogicDrift // Triggers State 3 Re-hydration
-    }
-
-    return true, nil
+    return nil
 }
 ```
-
 
 ## **6. MCP Tool & Resource Definition**
 
