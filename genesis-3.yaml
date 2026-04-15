@@ -22,12 +22,12 @@ authority_stack:
 drift_taxonomy:
   signature_drift:
     condition: "Fingerprint differs from Specbook."
-    meaning: "Contract violation."
+    meaning: "Contract violation or external signature mutation."
     action: "Demote to State 1 via Canvas Re-stretch."
   logic_drift:
     condition: "Fingerprint matches, Logic Hash differs from locked Genome state."
-    meaning: "Executable drift."
-    action: "Demote to State 3."
+    meaning: "Executable drift. No semantic exemptions allowed."
+    action: "Demote to State 3 for re-verification."
   intent_drift:
     condition: "Behavioral pass, Cognitive fail."
     meaning: "Semantic mismatch with Gene or Vision."
@@ -154,6 +154,20 @@ acceptance_envelope:
         - "Pass requires zero Critical Intent Violations."
         - "Cognitive score is advisory only."
 
+execution_safeguards:
+  broken_vacuum:
+    - "Must compile test via 'go test -c' before execution."
+    - "Failure to compile test after 3 attempts demotes node to State 2 (VacuumGenerationFailed)."
+  ast_splatter_shield:
+    - "Extraction must use parser-first detection, not regex-only."
+    - "Parsing must be wrapped in safe panic recovery."
+    - "Panic triggers SyntaxViolation and retreat to State 3."
+  contextual_rehydration:
+    - "LLMs are treated as stateless during JIT interruptions."
+    - "Orchestrator must inject aggregated context prompt upon resuming surgery."
+  tiered_sandbox:
+    - "go/parser and go/types execute before full compiler path to minimize latency."
+
 staged_mutation:
   rules:
     - "All mutation occurs in a staged workspace."
@@ -241,14 +255,14 @@ package_topology:
 
   dependency_direction: |
     identity
-
+    
     spec        genome
       \          /
        \        /
         scanner
-
+    
     staging
-
+    
     surgeon     audit     auditlog
         \        /
          \      /
