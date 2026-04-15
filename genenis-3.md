@@ -194,8 +194,6 @@ Successful completion of `apply_surgery` promotes a node directly to **State 5**
 2. **UndeclaredDependencyViolation**: Triggered by references to symbols not present in `specbook.yaml`.
 3. **Cycles**: Circular package-level import dependencies are rejected to maintain toolchain integrity.
 
-
-
 ---
 
 **Status:** Chapter 2 Locked.
@@ -203,61 +201,67 @@ Successful completion of `apply_surgery` promotes a node directly to **State 5**
 
 **"The infrastructure is final, sir. Every field and state transition is bounded. Ready to proceed to Chapter 3."**
 
-
----
-
 **Status:** Chapter 2 Locked.
 **Next Sequence:** Chapter 3: The Metamorphosis Pipeline.
 
 **"The infrastructure is solidified, sir. The registry is normative and the tools are state-gated. Ready to materialize Chapter 3."**
 
+This is the finalized, **Implementation-Grade Chapter 3**. It has been refined to distinguish between **Behavioral Retreats** (back to State 3) and **Structural Destructions** (back to State 1), ensuring the `internal/metamorphosis` controller operates with mathematical precision.
 
 ## **3. The Metamorphosis Pipeline (The 5-State Machine)**
 
 Chapter 3 defines the operational lifecycle of a Genomic Node. This pipeline is a strict, one-way state machine. A node cannot bypass a state, ensuring that the **"Physics"** of the system are always locked before the **"Logic"** is allowed to evolve.
 
 ### **3.1. State 1: Conceptual (The Gallery)**
-* **Agent:** DEEP Model (Architect)
-* **Focus:** Semantic Boundary & Business Intent
-* **Action:** The node is defined in the `specbook.yaml`. The agent debates and finalizes the `business_purpose` and the `gene`. 
+* **Maturity:** `conceptual`
+* **Focus:** Semantic Boundary & Business Intent.
+* **Action:** The node is defined in the `specbook.yaml`. The agent finalizes the `business_purpose` and the `gene`. 
 * **Guardrail:** **No Code Allowed.** The agent is physically blocked from generating Go syntax. This phase is purely for establishing the "Why" and the "Contract."
 
 ### **3.2. State 2: Hollow (The Canvas)**
-* **Agent:** FAST Model (Structural Engineer)
-* **Focus:** Structural Topography
-* **Action:** The agent reads the Specbook and materializes a "Hollow Stub" on the local disk. It writes the package declaration, imports, empty structs, and zero-return functions (`return nil`).
-* **Guardrail:** **Zero-Logic Rule.** Any detection of `if`, `for`, or variable assignments triggers an automatic rejection. 
+* **Maturity:** `hollow`
+* **Focus:** Structural Topography.
+* **Action:** The FAST model reads the Specbook and materializes a "Hollow Stub" (`return nil`) on the local disk.
 * **The Physics Gate:** The node must pass an AST Physics Audit (`go/ast`) to ensure it is a valid, buildable Go skeleton.
+* **Guardrail:** **Zero-Logic Rule.** Any detection of `if`, `for`, or variable assignments triggers an automatic rejection.
 
 ### **3.3. State 3: Anchored (The Contract)**
-* **Agent:** Local CC Agent (The Judge)
-* **Focus:** **[Black Box Trust]** Behavioral Baseline
-* **Action:** The engine generates a `_test.go` file containing table-driven test cases based on the `input/output` contracts defined in State 1.
-* **Guardrail:** **The Behavioral Vacuum.** The loop executes `go test`. The test **must fail** with a "not implemented" or "zero-value mismatch" error. This failure anchors the reality: we now have a mathematical proof of the requirement.
+* **Maturity:** `anchored`
+* **Focus:** **[Black Box Trust]** Behavioral Baseline & Recovery Point.
+* **Action:** The engine generates a `_test.go` file containing table-driven test cases based on the Specbook.
+* **The Behavioral Vacuum:** The loop executes `go test`. The test **must fail** with an expected non-zero result. This proves the "Vacuum" is live.
+* **Role:** State 3 serves as the **Stable Recovery Point** for all failed surgeries in State 4.
 
 ### **3.4. State 4: Hydrating (The Surgery)**
-* **Agent:** DEEP Model (Surgeon)
-* **Focus:** Algorithmic Implementation
-* **Action:** The Surgeon is provided with the Hollow Signature, the Gene, and the failing Test Case. It writes the actual execution logic.
-* **The JIT Constraint:** If the Surgeon attempts to call a dependency that is still in State 1, the **JIT Canvas Mounting** protocol pauses the loop, forces the dependency into State 2, and then resumes.
-* **The Signature Lock:** The Surgeon is forbidden from changing the function signature. If a signature change is required, the node must be demoted back to State 1 for a "Re-stretch."
+* **Maturity:** `hydrating`
+* **Status:** **Transient.** This is an active mutation window, not a resting state.
+* **Action:** The Surgeon consumes the Signature, the Gene, and the Failing Test to generate a candidate logic patch.
+* **The JIT Intercept:** If the Surgeon references an unmaterialized State 1 dependency, the **JIT Orchestrator** pauses the surgery to mount the dependency at State 2.
+* **The Retreat:** If the **Acceptance Envelope** (Chapter 4) fails, the node automatically retreats to State 3 for remediation.
 
 ### **3.5. State 5: Sequenced (Equilibrium)**
-* **Agent:** Local CC Agent (The Record-Keeper)
-* **Focus:** Genomic Locking
-* **Action:** Once the code passes the **Behavioral Audit** (tests pass) and the **Cognitive Audit** (logic matches the Gene), the agent performs the final sequence.
-* **The Identity Triad:** The system calculates the whitespace-agnostic `logic_hash` and locks the `public_id`.
-* **Persistence:** The node is marked as `State 5` in `genome.json`. It is now a permanent part of the project's "Actual State."
+* **Maturity:** `sequenced`
+* **Action:** Occurs only after the **Acceptance Envelope** returns a unanimous `PASS`.
+* **The Genomic Lock:** The system calculates the `logic_hash` and commits the node to `genome.json`.
+* **Stability:** The node is now genomically locked until a Refinement Event or a Drift Alert triggers a new transition.
 
 ### **3.6. Summary of State Transitions**
 
-| State | Maturity | Primary Gate | Artifact Generated |
+| State | Maturity | Exit Gate | Artifact Status |
 | :--- | :--- | :--- | :--- |
 | **1** | Conceptual | Spec Validation | Specbook Entry + Gene |
-| **2** | Hollow | AST Physics Audit | `.go` Stub (Skeleton) |
-| **3** | Anchored | Test Failure Gate | `_test.go` (The Anchor) |
-| **4** | Hydrating | Test Success Gate | Functional Go Logic |
-| **5** | Sequenced | Hash Lock Gate | Final `genome.json` Entry |
+| **2** | Hollow | Physics Audit | `.go` Stub (Skeleton) |
+| **3** | Anchored | Behavioral Vacuum | `_test.go` (Failing) |
+| **4** | Hydrating | Acceptance Envelope | Transient Logic Patch |
+| **5** | Sequenced | Genomic Lock | Hydrated Code + `logic_hash` |
+
+### **3.7. Controller Transition Logic**
+The `internal/metamorphosis` controller enforces the following movement rules:
+* **`1 -> 2`**: Call `mount_canvas`.
+* **`2 -> 3`**: Call `anchor_contract`.
+* **`3 -> 5`**: Call `apply_surgery` (Handling State 4 as an internal mutation window).
+* **`4 -> 3`**: **Retreat.** Automatic rollback to anchored test state on audit failure.
+* **`Any -> 1`**: **Canvas Re-stretch.** Triggered only by contract mutations, signature invalidations, or spec-level structural changes.
 
 ## **4. The Surgical Inner Loop (The Immune System)**
 
