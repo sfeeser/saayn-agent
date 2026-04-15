@@ -1,0 +1,289 @@
+version: "1.0.0"
+document: "Genesis Runtime Constitution"
+purpose: >
+  Always-loaded execution kernel for the Genesis Engine. Defines the non-bypassable
+  runtime laws required for deterministic code materialization.
+
+core_law: "Genesis executes locked laws. It does not debate architecture."
+
+authority_stack:
+  precedence:
+    - specbook
+    - genome
+    - vision
+  rules:
+    - "Specbook is normative and executable authority."
+    - "Genome is observational and locked actual state."
+    - "Vision is descriptive and cognitive only."
+    - "If Vision implies behavior not present in Specbook, execution halts until Specbook is updated."
+    - "Genome may not override Specbook structure."
+    - "Vision may inform Cognitive Audit only."
+
+drift_taxonomy:
+  signature_drift:
+    condition: "Fingerprint differs from Specbook."
+    meaning: "Contract violation."
+    action: "Demote to State 1 via Canvas Re-stretch."
+  logic_drift:
+    condition: "Fingerprint matches, Logic Hash differs from locked Genome state."
+    meaning: "Executable drift."
+    action: "Demote to State 3."
+  intent_drift:
+    condition: "Behavioral pass, Cognitive fail."
+    meaning: "Semantic mismatch with Gene or Vision."
+    action: "Demote to State 3."
+
+identity_triad:
+  components:
+    - public_id
+    - fingerprint
+    - logic_hash
+
+  public_id:
+    grammar: "<visibility>.<package_path>.<receiver_or_type_optional>.<symbol_name>[T1,T2,...]"
+    visibility_enum: ["pub", "priv"]
+    rules:
+      - "Visibility reflects Go symbol export status only."
+      - "package_path uses '/'."
+      - "Pointer and value receivers normalize to base type."
+      - "Generic parameters normalize positionally as T1, T2, ..."
+      - "Filename is never part of identity."
+    examples:
+      - "pub.internal/scanner.ScanFile"
+      - "pub.internal/scanner.Scanner.VerifyNode"
+      - "pub.internal/model.Node"
+
+  fingerprint:
+    purpose: "Canonical structural signature."
+    rules:
+      - "Strip parameter names."
+      - "Ignore named returns."
+      - "Preserve parameter and return order."
+      - "Resolve all types through go/types."
+      - "Render fully qualified type paths."
+
+  logic_hash:
+    purpose: "SHA-256 of canonical function-body serialization."
+    rules:
+      - "Extract ast.BlockStmt."
+      - "Remove comments and formatting."
+      - "Remap local variables to stable sequence v1, v2, ..."
+      - "Hash canonical serialization, not raw source text."
+      - "Any Logic Hash change is drift. There are no semantic exemptions."
+
+state_machine:
+  states:
+    "1":
+      name: "conceptual"
+      purpose: "Define gene, business_purpose, and contract."
+      constraints:
+        - "Code generation forbidden."
+    "2":
+      name: "hollow"
+      purpose: "Create buildable structural stub."
+      constraints:
+        - "Zero-Logic Rule enforced."
+    "3":
+      name: "anchored"
+      purpose: "Create failing node-scoped test and establish Behavioral Vacuum."
+      constraints:
+        - "Stable recovery point."
+    "4":
+      name: "hydrating"
+      purpose: "Transient mutation window."
+      constraints:
+        - "Not a resting state."
+        - "Exists only during active staged surgery."
+    "5":
+      name: "sequenced"
+      purpose: "Locked, verified node."
+      constraints:
+        - "Requires unanimous Acceptance Envelope pass."
+        - "Logic Hash stored and locked."
+
+  transitions:
+    - from: 1
+      to: 2
+      via: "mount_canvas"
+    - from: 2
+      to: 3
+      via: "anchor_contract"
+    - from: 3
+      to: 5
+      via: "apply_surgery"
+      note: "State 4 is handled internally as a transient mutation window."
+    - from: 4
+      to: 3
+      via: "acceptance_envelope_failure"
+    - from: "*"
+      to: 1
+      via: "canvas_re_stretch"
+      when:
+        - "contract mutation"
+        - "signature invalidation"
+        - "structural spec change"
+
+acceptance_envelope:
+  execution_order:
+    - signature_lock
+    - physics_audit
+    - behavioral_audit
+    - cognitive_audit
+  fail_fast: true
+  rule: "If Gate N fails, Gates N+1 are skipped."
+
+  gates:
+    signature_lock:
+      requirements:
+        - "Proposed patch fingerprint must match locked registry fingerprint."
+        - "Pre-surgical."
+        - "No mutation allowed before pass."
+    physics_audit:
+      requirements:
+        - "Syntax validity via parser."
+        - "Package integrity via package-level compilation."
+        - "Run in staged workspace only."
+    behavioral_audit:
+      requirements:
+        - "Deterministic node-scoped tests only."
+        - "State 3 requires expected non-zero exit for vacuum proof."
+        - "State 4 requires zero exit for behavioral pass."
+    cognitive_audit:
+      requirements:
+        - "Boolean pass/fail."
+        - "Pass requires zero Critical Intent Violations."
+        - "Cognitive score is advisory only."
+
+staged_mutation:
+  rules:
+    - "All mutation occurs in a staged workspace."
+    - "No authoritative filesystem mutation before full pass."
+    - "All gates operate on staged code."
+    - "Commit occurs only after unanimous Acceptance Envelope pass."
+    - "Failed mutation leaves authoritative filesystem unchanged."
+
+  crash_recovery:
+    - "If interrupted during State 4, authoritative filesystem remains unchanged."
+    - "Staged workspace is discarded."
+    - "Node restores to last persisted stable state."
+
+remediation:
+  max_attempts_per_node: 3
+  attempts:
+    "1": "Normal hydration from Gene + Signature + anchored test."
+    "2_3": "Add prior failure logs and findings."
+  exhaustion:
+    state: 3
+    flag: "Blocked"
+    effects:
+      - "Dependent DAG branch pauses."
+      - "Human intervention required."
+
+mcp_sovereignty:
+  rules:
+    - "MCP is the only external mutation boundary."
+    - "LLMs are request-only."
+    - "MCP tools are atomic, staged, idempotent, and audited."
+    - "No internal package may depend on MCP."
+    - "MCP is outermost transport layer only."
+
+  resources:
+    - "saayn://vision/soul"
+    - "saayn://spec/nodes/{public_id}"
+    - "saayn://genome/nodes/{public_id}"
+
+  tools:
+    - "mount_canvas"
+    - "anchor_contract"
+    - "apply_surgery"
+    - "trigger_jit_mount"
+
+  control_rules:
+    - "trigger_jit_mount is orchestrator-invoked, not LLM-controlled."
+
+error_taxonomy:
+  "401":
+    label: "SIGNATURE_VIOLATION"
+    meaning: "Patch deviates from locked Fingerprint."
+  "402":
+    label: "PHYSICS_FAILURE"
+    meaning: "Syntax or package integrity failure."
+  "403":
+    label: "BEHAVIORAL_FAILURE"
+    meaning: "Test failure or missing vacuum."
+  "404":
+    label: "COGNITIVE_DRIFT"
+    meaning: "Gene or Vision mismatch."
+  "405":
+    label: "UNDECLARED_DEPENDENCY"
+    meaning: "Symbol not present in Specbook."
+  "406":
+    label: "JIT_MOUNT_REQUIRED"
+    meaning: "Declared dependency must be mounted at State 2."
+  "407":
+    label: "ITERATION_EXHAUSTED"
+    meaning: "Node failed all 3 attempts."
+
+package_topology:
+  canonical_package_set:
+    - "internal/identity"
+    - "internal/spec"
+    - "internal/genome"
+    - "internal/scanner"
+    - "internal/staging"
+    - "internal/surgeon"
+    - "internal/audit"
+    - "internal/metamorphosis"
+    - "internal/orchestrator"
+    - "internal/auditlog"
+    - "internal/mcp"
+    - "cmd/saayn"
+
+  dependency_direction: |
+    identity
+
+    spec        genome
+      \          /
+       \        /
+        scanner
+
+    staging
+
+    surgeon     audit     auditlog
+        \        /
+         \      /
+       metamorphosis
+             |
+        orchestrator
+             |
+            mcp
+             |
+         cmd/saayn
+
+  hard_rules:
+    - "No cyclic imports."
+    - "No upward dependencies."
+    - "metamorphosis must not import orchestrator."
+    - "surgeon and audit must not import each other."
+    - "auditlog must not depend on mcp."
+    - "Root directory must not contain main.go."
+    - "Executable entry points live only under cmd/."
+
+preflight_boundary:
+  rules:
+    - "Genesis must not execute unless Preflight has passed."
+    - "Preflight validates state machine consistency, package DAG validity, authority stack consistency, Identity Triad completeness, Acceptance Envelope consistency, and transaction integrity."
+    - "Preflight is design-time only."
+    - "Genesis runtime does not perform debate or architecture negotiation."
+
+runtime_input_contract:
+  required_inputs:
+    - runtime_constitution
+    - node_local_contract
+    - current_genome_state
+    - relevant_dependency_signatures
+    - current_failure_delta
+  forbidden_inputs:
+    - "Full historical chapter negotiation for routine node operations."
+
+final_law: "Physics before logic. Contract before mutation. Verification before commit."
