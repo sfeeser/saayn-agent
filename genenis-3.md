@@ -111,112 +111,105 @@ Following your recommended build order, we now initiate the `internal/identity` 
 
 **"The machine-checkable laws are set, sir. I am initializing `internal/identity.go`. Shall I provide the first draft of the construction and normalization logic?"**
 
+This is the final, implementation-grade **Chapter 2**. All state transitions, field requirements, and tool preconditions have been tightened to ensure a deterministic, machine-enforceable build of the Genesis Engine.
+
+---
+
+This is the final, **Locked Version** of **Chapter 2**. All edge-condition semantics have been addressed, the field matrix is complete, and the dependency enums are strictly bounded.
+
+---
+
 ## **2. Architectural Anatomy (The Infrastructure)**
 
 Section 2 defines the physical and digital structures required to host the Code Genome. It establishes the "Standard Model" for project organization and the protocols for internal communication and state persistence.
 
-## 💾 The Genome Schema
+### **2.1. The Standard Model: File Hierarchy**
+SAAYN-Agent v6 enforces a strict **Standard Model**. The engine only recognizes nodes within these boundaries.
+
+* **`cmd/`**: Entry points. Logic is strictly limited to orchestration calls.
+* **`internal/`**: Private logic and the Surgical Inner Loop.
+* **`pkg/`**: Public DNA and shared models.
+* **`.saayn/`**: The System Vault. Contains audit logs, temporary mutation workspaces, and the local vector index.
+* **Root Artifacts**: `vision.md` (Soul), `specbook.yaml` (Genotype), `genome.json` (Phenotype), and `genome.index.json` (Nervous System).
+
+### **2.2. The DNA Registry: `genome.json` Schema**
+The `public_id` visibility prefix (`pub` or `priv`) reflects Go symbol export status only and does not alter Go package accessibility rules.
+
+#### **Canonical Registry Field Requirements**
+| Field | State 1 | State 2 | State 3 | State 4 | State 5 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **public_id** | REQ | REQ | REQ | REQ | REQ |
+| **genesis_state** | REQ | REQ | REQ | REQ | REQ |
+| **maturity** | REQ | REQ | REQ | REQ | REQ |
+| **fingerprint** | REQ | REQ | REQ | REQ | REQ |
+| **logic_hash** | FORBID | FORBID | FORBID | OPT | REQ |
+| **gene** | REQ | REQ | REQ | REQ | REQ |
+| **business_purpose** | REQ | REQ | REQ | REQ | REQ |
+| **dependencies** | REQ | REQ | REQ | REQ | REQ |
+| **last_audit** | FORBID | OPT | REQ | REQ | REQ |
+
+> **State 4 Persistence:** State 4 (Hydrating) may be persisted temporarily in `genome.json` during active surgery or crash recovery, but it is not a stable terminal state and must resolve to either State 3 rollback or State 5 completion.
+>
+> **State 3 Audit:** At State 3, `last_audit` records a successful anchor event, verifying the Behavioral Audit produced the expected non-zero result (the "Contract Vacuum").
+
+#### **Dependency Enums & Constraints**
+* **kind:** `function | method | type | interface | var`
+* **source:** `spec | jit | ast`
+* **status:** `predicted | mounted | verified`
+* **Constraint:** `var` refers strictly to package-level variables. Local variables and constants (`const`) are never tracked as dependencies.
+
+### **2.3. The Nervous System: `genome.index.json` Schema**
+The index decouples structural lookup from semantic discovery. 
 
 ```json
 {
-  "project_metadata": {
-    "project_name": "SAAYN-Agent",
-    "version": "1.0.0",
-    "logic_engine": "saayn-v5-ast",
-    "total_nodes": 175,
-    "last_sequence_hash": "sha256:7f8e9a..."
+  "index_metadata": {
+    "embedding_model": "text-embedding-3-small",
+    "dimension": 1536,
+    "distance_metric": "cosine",
+    "last_rebuild_at": "2026-04-15T07:34:52Z"
   },
-  "nodes": {
-    "pkg.internal.scanner.ScanFile": {
-      "uuid": "node-scn-001",
-      "public_id": "scanner.ScanFile[scanner.go]",
-      "uip": "internal/scanner.ScanFile",
-      
-      // --- GENESIS STATE MACHINE ---
-      // genesis_state: 1 | 2 | 3 | 4
-      "genesis_state": 4, 
-      
-      // maturity: "conceptual" | "hollow" | "anchored" | "sequenced"
-      "maturity": "sequenced", 
-      
-      // --- THE IDENTITY TRIAD ---
-      "fingerprint": "func(filePath string) ([]model.Node, error)",
-      "logic_hash": "sha256:a1b2c3d4e5f6...", // Set only when state == 4
-      "linked_spec_uuid": "spec-pkg-scn-001",
-
-      // --- GENOMIC CONTENT ---
-      "gene": "Recursively parses Go files into AST nodes. Excludes whitespace/comments from hash. Must handle symlinks.",
-      "business_purpose": "The primary sensory organ for identifying code identity and logic drift.",
-
-      // --- DEPENDENCY GRAPH ---
-      // NOTE: Evolution of this field:
-      // STATE 1-2: Predicted/Spec-bound (Used to build the Roadmap/DAG).
-      // STATE 3:   Dynamic (Updated via JIT Canvas Mounting if Surgeon adds calls).
-      // STATE 4:   AST-Derived (The Final Truth). Must be extracted via go/ast 
-      //            to verify it matchesauthorized boundaries.
-      "dependencies": [
-        "pkg.internal.model.Node",
-        "pkg.internal.astutil.CalculateHash"
-      ],
-      
-      // --- RECONCILIATION DATA ---
-      "last_audit": {
-        "timestamp": "2026-04-15T07:34:52Z",
-        "physics_pass": true,
-        "behavioral_pass": true,
-        "cognitive_score": 0.98,
-        "last_remediation_count": 1
-      }
+  "entries": {
+    "pub.internal/scanner.Scanner.ScanFile": {
+      "public_id": "pub.internal/scanner.Scanner.ScanFile",
+      "source_hash": "sha256:a1b2...",
+      "vector": [0.0123, -0.0441, 0.1092]
     }
   }
 }
 ```
 
-### **2.1. The Standard Model: File Hierarchy**
-SAAYN-Agent v6 enforces a strict **Standard Model** for project structure. This hierarchy ensures that the Genesis Engine can predictably locate nodes and that the "Sensory Organs" (Scanner) can map the filesystem with 100% accuracy.
+### **2.4. MCP Integration: Tool Preconditions**
+Successful completion of `apply_surgery` promotes a node directly to **State 5**.
 
-
-
-* **`cmd/`**: The Command Tier. Contains the entry points for the CLI. Logic here is strictly limited to bootstrap and orchestration calls.
-* **`internal/`**: The Core Anatomy. Private logic, state management, and the Surgical Inner Loop. No code outside this project may import from this directory.
-* **`pkg/`**: The Public DNA. Shared models and library code that define the "Connectome" between packages.
-* **Root Artifacts**:
-    * `specbook.yaml`: The Genotype (Desired State).
-    * `genome.json`: The Phenotype (Actual State).
-    * `genome.index.json`: The Nervous System (Semantic State).
-
-### **2.2. The DNA Registry: `genome.json` Schema**
-The DNA Registry is the definitive record of the **Actual State**. It tracks the metamorphosis of every node from a conceptual requirement to a sequenced reality.
-
-**Key Registry Logic:**
-* **Stateful Tracking**: Every node must carry a `genesis_state` (1–4) and a matching `maturity` label.
-* **The Gene Field**: A node-specific, immutable behavioral instruction that acts as the prompt for State 3 (Hydration).
-* **The Identity Triad**: Mandatory inclusion of `public_id`, `fingerprint`, and `logic_hash` for every sequenced node.
-
-### **2.3. The Nervous System: `genome.index.json`**
-The Nervous System provides the **Semantic Map** of the genome. While `genome.json` understands the physics of the code, `genome.index.json` understands the *intent*.
-
-* **Vector Embeddings**: Uses 1536-dimensional vectors to represent the "Business Purpose" and "Gene" of every node.
-* **Proximity Logic**: Enables natural language discovery (e.g., "Find where we handle Stripe callbacks") by calculating cosine similarity between human intent and the code's semantic signature.
-* **Local Storage**: To ensure privacy and speed, the index is stored and queried locally, requiring an LLM only for the initial vector generation.
-
-### **2.4. MCP Integration: The SAAYN-MCP Server**
-The **Model Context Protocol (MCP)** acts as the universal docking port. By wrapping the infrastructure in an MCP server, we decouple the "Cognitive Brain" from the "Local Body."
-
-**MCP Resource Mapping:**
-* `saayn://vision`: Streams the `readme.md` (Soul).
-* `saayn://spec/nodes/{id}`: Streams the YAML contract (Genotype).
-* `saayn://genome/nodes/{id}`: Streams the current AST state (Phenotype).
-
-**MCP Tool Mapping:**
-* `get_node_dna`: Allows the agent to "Lazy Load" a specific AST node.
-* `mount_canvas`: Triggers the FAST model to generate State 2 stubs.
-* `apply_surgery`: Submits a patch for State 3 hydration, gated by the Physics Audit.
+| Tool | Input State | Success Output | Rejects If |
+| :--- | :--- | :--- | :--- |
+| `mount_canvas` | 1 | State 2 Stub | Target contains logic or fails Physics Audit |
+| `anchor_contract`| 2 | State 3 Anchor | `go test` passes (No behavioral vacuum) |
+| `apply_surgery` | 3 | State 5 Node | Fingerprint mismatch or Acceptance Envelope failure |
+| `trigger_jit_mount`| 4 | State 2 Dep | Target not declared in `specbook.yaml` |
 
 ### **2.5. Dependency Resolution: The JIT Orchestrator**
-The architecture includes a specialized **Just-In-Time (JIT) Orchestrator** that prevents "Dependency Hallucination."
+1. **JITMountRequired Intercept**: Triggered when a Surgeon (State 4) references a State 1 project symbol.
+2. **UndeclaredDependencyViolation**: Triggered by references to symbols not present in `specbook.yaml`.
+3. **Cycles**: Circular package-level import dependencies are rejected to maintain toolchain integrity.
 
-If a node in State 3 (Hydration) attempts to call an external node that is currently in State 1 (Conceptual), the Orchestrator **freezes** the current sequence, initiates a **State 2 (Hollow)** materialization for the dependency, and only then resumes the original surgery. This ensures the compiler always sees a valid interface.
+
+
+---
+
+**Status:** Chapter 2 Locked.
+**Next Sequence:** Chapter 3: The Metamorphosis Pipeline.
+
+**"The infrastructure is final, sir. Every field and state transition is bounded. Ready to proceed to Chapter 3."**
+
+
+---
+
+**Status:** Chapter 2 Locked.
+**Next Sequence:** Chapter 3: The Metamorphosis Pipeline.
+
+**"The infrastructure is solidified, sir. The registry is normative and the tools are state-gated. Ready to materialize Chapter 3."**
 
 
 ## **3. The Metamorphosis Pipeline (The 5-State Machine)**
