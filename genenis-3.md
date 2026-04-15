@@ -365,122 +365,132 @@ func (s *Scanner) VerifyFunction(node *dst.FuncDecl, record GenomeNode) error {
 }
 ```
 
+
 ## **6. MCP Tool & Resource Definition**
 
-Chapter 6 defines the **Model Context Protocol (MCP)** implementation for SAAYN-Agent v6. By wrapping the Genesis Engine in an MCP server, we transform local filesystem operations into a set of standardized, stateful services. This allows the AI "Brain" to interact with the project "Genome" through a strict, audited interface.
+Chapter 6 defines the **Model Context Protocol (MCP)** implementation. By wrapping the Genesis Engine in an MCP server, we transform filesystem operations into standardized, audited services, allowing the AI "Brain" to interact with the project "Genome" through a strict interface.
+
+### **6.0. Tool Transaction Contract**
+All MCP tools operate under the **Sovereign Control Model**:
+* **Atomic:** Each tool call is a single-node transaction. It must either complete and commit or fail and leave the filesystem unchanged.
+* **Staged:** No direct filesystem mutation occurs before full validation. All work is performed in the **Staged Mutation Workspace**.
+* **Idempotent:** Tool calls are safe to retry; identical inputs must produce identical genomic results.
+* **Audited:** Every call generates a structured log in `.saayn/audit/` containing the **Mutation Quad**.
+
+---
 
 ### **6.1. Resources: The Genomic Data Stream**
-Resources allow the Agent to "read" the state of the project without manually parsing files. They provide clean, structured context on demand.
-We will use github.com/modelcontextprotocol/go-sdk as the library.
-* **`saayn://vision/readme`**
-    * **Description:** Returns the raw Markdown of the project's Soul.
-    * **Use Case:** Provides high-level intent for Cognitive Audits.
-* **`saayn://spec/nodes/{uip}`**
+Resources provide read-only, structured context. All node-specific URIs use the **Canonical PublicID**.
+
+* **`saayn://vision/soul`**
+    * **Description:** Returns the raw Markdown of `vision.md`.
+    * **Use Case:** High-level intent for **Gate 4 (Cognitive Audit)**.
+* **`saayn://spec/nodes/{public_id}`**
     * **Description:** Returns the YAML Genotype for a specific node.
-    * **Use Case:** Used by the Surgeon to understand the I/O contract and the "Gene."
-* **`saayn://genome/state`**
-    * **Description:** Returns a summary of the `genome.json` (Total nodes, completion percentage, nodes needing remediation).
-    * **Use Case:** Used by the Orchestrator to plan the next build sequence.
+    * **Use Case:** Defines the **Gene** and **Fingerprint** for the Surgeon.
+* **`saayn://genome/nodes/{public_id}`**
+    * **Description:** Returns the current registry entry from `genome.json`.
+    * **Use Case:** Verifies current `genesis_state` and `logic_hash`.
+
+---
 
 ### **6.2. Tools: The Surgical Interface**
-Tools are the "active" functions the Agent calls to mutate the project. Every tool call is intercepted by the **CC Agent** to enforce the 4-Gate Audit system.
+Tools are the exclusive mechanisms for project mutation, intercepted by the **CC Agent** to enforce the **Acceptance Envelope**.
 
 #### **`mount_canvas`**
-* **Input:** `uip string`, `spec_data json`
-* **Output:** `status: "success" | "error"`, `file_path: string`
-* **Action:** Triggers the FAST model to drop a **State 2 (Hollow)** stub. 
-* **Guardrail:** The tool fails if the input `spec_data` contains logic loops or non-zero returns.
+* **Input:** `public_id string`
+* **Action:** Materializes a **State 2 (Hollow)** stub on disk.
+* **Guardrail:** Rejects if the code contains control flow, assignments, or fails the **Physics Audit**.
 
 #### **`anchor_contract`**
-* **Input:** `uip string`
-* **Output:** `test_results string`, `exit_code int`
-* **Action:** Generates the table-driven `_test.go` and runs it.
-* **Guardrail:** **[Black Box Trust]** In Phase 3, this tool *must* return a non-zero exit code to prove the "Behavioral Vacuum" is set.
+* **Input:** `public_id string`
+* **Action:** Generates a node-scoped `_test.go` and executes it via a deterministic filter.
+* **Guardrail:** Must return a non-zero exit code to promote the node to **State 3**.
 
 #### **`apply_surgery`**
-* **Input:** `uip string`, `patch_code string`
-* **Output:** `audit_report json`
-* **Action:** Splicing logic into the DST for **State 4 (Hydration)**.
-* **Guardrail:** Performs a **Signature Lock** check. If `patch_code` signature $\neq$ `fingerprint`, the tool rejects the patch and returns a "Structural Violation" error.
+* **Input:** `public_id string`, `patch_code string`
+* **Action:** Executes the **Acceptance Envelope** (Gates 1–4) in a staged workspace. 
+* **Commit:** If all gates pass, the DST splice is committed to the filesystem and the node is promoted to **State 5**.
 
 #### **`trigger_jit_mount`**
-* **Input:** `missing_dependency_uip string`
-* **Output:** `status: "mounted"`
-* **Action:** When the Surgeon hits a missing dependency, it calls this to pause its current task and spawn a new Hollow Canvas for the requirement.
+* **Input:** `dependency_public_id string`
+* **Action:** Suspends the hydration transaction to mount a State 1 dependency at State 2.
+* **Control:** **Orchestrator-invoked.** This tool is managed by the system and is visible to the Agent for observability but is not intended for direct LLM invocation.
 
-### **6.3. The Protocol Handshake (The "Tony Stark" Interface)**
-When a DEEP model begins a task, it performs a **Contextual Handshake** via MCP:
+---
 
-1.  **Request:** `list_resources("saayn://spec/nodes")` — *What is my target?*
-2.  **Request:** `read_resource("saayn://spec/nodes/scanner.ScanFile")` — *What is my Gene?*
-3.  **Action:** `call_tool("anchor_contract", {"uip": "scanner.ScanFile"})` — *Set the behavioral anchor.*
-4.  **Action:** `call_tool("apply_surgery", {"uip": "scanner.ScanFile", "patch_code": "..."})` — *Perform the hydration.*
+### **6.4. Standardized Error Taxonomy**
+The MCP Server uses these codes to communicate violations to the Agent:
 
-### **6.4. Error Codes & State Rejection**
-The MCP Server uses standardized error codes to communicate "Physics" violations to the Agent:
+| Code | Label | Meaning |
+| :--- | :--- | :--- |
+| **`401`** | `SIGNATURE_VIOLATION` | Patch deviates from locked `Fingerprint`. |
+| **`402`** | `PHYSICS_FAILURE` | Code fails syntax check or package-level compilation. |
+| **`403`** | `BEHAVIORAL_FAILURE` | Unit tests failed (or failed to fail in State 3). |
+| **`404`** | `COGNITIVE_DRIFT` | Logic violates the **Gene** or **Vision**. |
+| **`405`** | `UNDECLARED_DEPENDENCY` | Reference to a symbol not in `specbook.yaml`. |
+| **`406`** | `JIT_MOUNT_REQUIRED` | Dependency requires State 2 materialization before hydration. |
+| **`407`** | `ITERATION_EXHAUSTED` | Failed all 3 attempts; node is **Blocked**. |
 
-* **`CODE_401_SIGNATURE_VIOLATION`**: Agent tried to change a locked function signature.
-* **`CODE_402_PHYSICS_FAILURE`**: Code does not compile or pass AST check.
-* **`CODE_403_BEHAVIORAL_FAILURE`**: Unit tests failed to pass after hydration.
-* **`CODE_404_COGNITIVE_DRIFT`**: Logic does not satisfy the "Gene" requirement.
 
-Choosing the **Official Go SDK** is a high-integrity architectural move. In a system like **SAAYN**, where we are performing destructive filesystem operations (surgery), relying on the most spec-compliant, long-term supported library ensures our **Surgical Protocol** won't break as the MCP standard evolves.
+This is the **Final, Locked Version of Chapter 7** and the completion of the **Genesis Engine Specification**. The drift-handling logic has been refined to ensure a deterministic, two-phase transition that respects the state machine's integrity.
 
-Here is the final chapter of the specification, detailing how the engine brings itself to life.
-
+---
 
 ## **7. Deployment & Operation (The Bootstrap)**
 
-Chapter 7 defines the **"First Breath"** protocol—the sequence of events that transforms a blank directory into a stateful project genome. It also outlines the operational lifecycle for ongoing maintenance and the "Self-Healing" mechanisms of the engine.
+Chapter 7 defines the **"First Breath"** protocol—the sequence that transforms a blank directory into a stateful project genome and governs its operational lifecycle.
 
 ### **7.1. The Bootstrap Sequence**
-Genesis does not happen all at once; it is a cold-start process that builds the foundation before the logic.
+Genesis is a cold-start process that establishes the physical foundation before invoking the logic engine.
 
 1.  **Initialization (`saayn init`):**
-    * Creates the `.saayn/` hidden directory.
-    * Generates the initial `genome.json` with `project_metadata`.
-    * Validates the presence of `vision.md` and `specbook.yaml`.
+    * Creates the `.saayn/` system directory and the `audit/` logs.
+    * Generates the initial `genome.json` with `schema_version: "1.0.0"`.
+    * Validates the presence of root artifacts: `vision.md` and `specbook.yaml`.
 2.  **The Registry Sync:**
-    * The Scanner walks the existing directory (if any).
-    * It identifies "Pre-existing Nodes" and registers them as **State 5 (Sequenced)** if they match the Spec, or **State 0 (Drifted)** if they do not.
+    * The Scanner walks the existing directory. Pre-existing nodes are registered as **State 5 (Sequenced)** only if they satisfy the **Acceptance Envelope** (Chapter 4). 
+    * **Drift Handling:** Nodes that fail any gate are registered as **State 5 with a `DriftDetected` flag**. These nodes are flagged for remediation and scheduled for transition to **State 3** by the controller.
 3.  **The Dependency DAG Calculation:**
     * The JIT Orchestrator parses the Specbook to create the **Build Roadmap**.
-    * It identifies "Root Packages" (those with zero internal dependencies) to begin the **State 2 (Hollow)** rollout.
+    * It identifies "Root Nodes" (zero internal dependencies) to initiate the **State 2 (Hollow)** rollout.
 
 ### **7.2. The "First Breath" Command**
-The primary entry point for a new project is the `genesis` command.
+
+The primary entry point for project materialization.
 
 ```bash
-saayn genesis --strategy test-first --target ./out
+saayn genesis --strategy test-first --target ./internal
 ```
 
 **Execution Flow:**
-* **Step A:** The MCP Server starts in the background using the `modelcontextprotocol/go-sdk`.
-* **Step B:** The Orchestrator begins the **Metamorphosis Pipeline** node-by-node.
-* **Step C:** The UI provides a "Genomic Progress Bar," showing the count of nodes in States 1 through 5.
+* **Step A:** The MCP Server initializes using the `modelcontextprotocol/go-sdk`.
+* **Step B:** The Orchestrator iterates through the DAG, invoking the **Metamorphosis Pipeline** (Chapter 3) node-by-node.
+* **Step C:** The UI renders a **Genomic Progress Bar** mapped to the 5-state distribution in `genome.json`.
 
-### **7.3. Error Remediation & Fallback (The Iteration Cap)**
-To prevent infinite loops and cost overruns during **State 4 (Hydration)**, the engine enforces strict limits:
-
-* **Maximum Iterations:** 3 attempts per node.
-* **Backoff Strategy:** After a failure, the prompt for the next iteration is enriched with the specific compiler error and `go test` stack trace.
-* **The "Halt" Protocol:** If a node fails all 3 attempts, the engine **Freezes** the entire branch of the DAG. It marks the node as `State 3 (Blocked)` and requires the human architect to resolve the "Cognitive Mismatch."
+### **7.3. Error Remediation & The "Halt" Protocol**
+To prevent infinite loops, the engine enforces a strict **3-Iteration Cap** per node.
+* **The Freeze:** If a node fails all 3 attempts, it remains in **State 3** and is flagged as **Blocked**. 
+* **Propagation:** Any dependent nodes in the DAG are automatically paused. The system halts and requires a human architect to resolve the "Cognitive Mismatch."
 
 ### **7.4. Verification & Auditing (`saayn verify`)**
-Post-Genesis, the system provides a verification tool to ensure the **Identity Triad** remains intact.
+The `verify` command re-executes the **Acceptance Envelope** (Chapter 4) in **Audit Mode** against all State 5 nodes to ensure the **Identity Triad** remains intact.
 
-* **Logic Hash Check:** Re-calculates hashes for all files and compares them against `genome.json`.
-* **Signature Audit:** Ensures no manual edits have broken the interfaces defined in the Specbook.
-* **Intent Audit:** Runs a batch Cognitive Review to ensure that as the project grew, the final nodes still align with the original **Vision**.
+### **7.5. Operational Lifecycle: "Refine" Mode**
+When `specbook.yaml` is modified, the engine enters **Refine Mode**:
+1.  **Invalidation:** Nodes with changed signatures are demoted to **State 1**.
+2.  **Recursive Invalidation:** All nodes that depend on a demoted node are flagged for **Re-sequencing**.
+3.  **Metamorphosis:** The engine triggers a **Canvas Re-stretch** (State 2) and re-hydrates the affected branch of the DAG.
 
-### **7.5. Operational Lifecycle: The "Refine" Mode**
-Genesis is not a one-time event. When the `specbook.yaml` is updated, the engine enters **Refine Mode**:
-1.  Identify nodes with changed signatures (Mark as **State 1**).
-2.  Trigger **Canvas Re-stretch** (State 2).
-3.  Re-anchor tests and re-hydrate logic (States 3 & 4).
+### **7.6. Crash Recovery Protocol**
+If the process is interrupted during a **Staged Mutation (State 4)**:
+* **Integrity:** The authoritative project filesystem remains untouched.
+* **Restoration:** On restart, the node is restored to its last persisted stable state (**State 3 or State 5**).
+* **Cleanup:** The temporary staged workspace is discarded.
 
 ### **Final Specification Summary**
 The SAAYN Genesis Engine is a **closed-loop system** where:
-* **MCP** provides the communication standard.
-* **Go-SDK** ensures the protocol integrity.
-* **The 4-Gate Audit** ensures the physical reality matches the human intent.
+* **MCP** provides the sovereign communication standard.
+* **The Identity Triad** provides the mathematical anchor.
+* **The 5-State Pipeline** ensures physics precedes logic.
+* **The Acceptance Envelope** ensures reality matches intent.
