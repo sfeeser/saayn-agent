@@ -37,35 +37,79 @@ Table of Contents
 This structure ensures that we define the Physical Laws (AST/Physics) before we ever allow the Cognitive Brain (LLM) to touch the code. It treats MCP as the "Docking Port" that allows us to plug in any LLM while maintaining 100% control over the local filesystem.
 
 
-## **1. Executive Summary: The Genesis Manifesto**
+This feedback is the final "green light" for the Genesis Engine. We have successfully transitioned from a high-level vision to a **Normative Specification** that can be directly compiled into Go logic.
+
+I have updated Chapter 1 with your terminology refinements—specifically the **Drift Taxonomy**—and finalized the **Identity Grammar**. We are now ready to begin the implementation of `internal/identity`.
+
+## **1. Executive Summary: The Genesis Manifesto (Finalized)**
 
 ### **1.1. Core Philosophy: Intent vs. Ephemerality**
-In the traditional software lifecycle, **Source Code** is often mistaken for the truth. In reality, code is merely a transient byproduct—an ephemeral artifact prone to drift, decay, and technical debt. The true "Source of Truth" is **Intent**.
+SAAYN-Agent v6 operates on a three-tier authority stack. To resolve disputes during reconciliation or materialization, the following **Precedence Semantics** are absolute:
 
-The **Genesis Engine** operates on a revolutionary hierarchy:
-1.  **The Soul (Vision):** The high-level human purpose of the system.
-2.  **The Skeleton (Specbook):** The mathematical and structural boundaries.
-3.  **The Genome (Actual State):** The physical manifestation in Go code.
+1.  **The Skeleton (Specbook) [Normative/Executable]:** The highest authority for structure and contract.
+2.  **The Genome (Actual State) [Observational/Locked]:** The record of what has been physically sequenced.
+3.  **The Soul (Vision) [Descriptive/Cognitive]:** Explains "Why" and provides the semantic anchor.
 
-By prioritizing **Intent** over **Syntax**, SAAYN-Agent v6 ensures that the codebase is not "written" but "sequenced." If the intent remains eternal, the code can be re-materialized or repaired at any time to match it.
+#### **The Triple-Drift Taxonomy:**
+* **Signature Drift (State 2 Demotion):** Any Genome state whose **Fingerprint** deviates from the Specbook is a contract violation. The node is demoted to **Hollow**.
+* **Logic Drift (State 3 Demotion):** Any Genome state whose Fingerprint matches but whose **Logic Hash** differs from the locked Genome state is an unauthorized mutation. The node is demoted to **Hydration**.
+* **Intent Drift (State 3 Demotion):** Any Genome state that passes Behavioral Audit but fails **Cognitive Audit** (semantic mismatch with the Gene/Vision) is demoted to **Hydration**.
 
-### **1.2. The Deterministic Guarantee: Why "Black Box Trust" Replaces "Vibe Coding"**
-Current AI-assisted development suffers from **"Vibe Coding"**—the reliance on an LLM's statistical probability to produce working code. SAAYN-Agent eliminates this "black box" through **Deterministic Physics**.
+### **1.2. The Deterministic Guarantee: The Acceptance Envelope**
+We replace "Vibe Coding" with a **Deterministic Acceptance Envelope**. A node is only considered "Passed" if it clears the following mandatory gates in an isolated sandbox.
 
-We do not trust the AI's "vibe." We trust the **Go Toolchain**. 
-The **Black Box Trust** model mandates that before logic is even hydrated, a behavioral contract (The Unit Test) must be anchored. The AI is then trapped in a remediation loop where the only exit is a `PASS` signal from the local compiler and test runner. 
+* **Gate A (Physics):** `go/ast` parse validity + `go/types` interface satisfaction.
+* **Gate B (Contract):** Signature matches the Specbook Fingerprint exactly.
+* **Gate C (Behavioral):** Node-local Table-Driven Tests pass (`Exit 0`).
+* **Gate D (Genomic):** `go vet` and package-level compilation pass.
 
-### **1.3. The Identity Triad: Defining the Genomic Fingerprint**
-To maintain 100% precision during high-fidelity code surgery, SAAYN-Agent v6 discards line-number-based editing. Instead, it identifies every code node through an indestructible **Identity Triad**:
+**Sandbox Policy:** All mutations and tests occur in a temporary package-scoped workspace. No network access allowed.
 
-1.  **PublicID:** A globally unique, human-readable identifier (e.g., `pkg.internal.scanner.ScanFile`). This acts as the "address" of the gene.
-2.  **Fingerprint:** The structural signature of the node (parameters and return types). This enforces the **Signature Lock**, preventing the AI from changing the contract without authorization.
-3.  **Logic Hash:** A cryptographic signature of the AST body, excluding whitespace and comments. This is the **Drift Detector**; if the hash changes, the system knows the logic has mutated.
+### **1.3. The Identity Triad: Canonicalization Rules**
 
-### **1.4. The MCP Sovereign**
-Under this manifesto, SAAYN-Agent is not just a tool; it is a **Sovereign Environment**. By using the **Model Context Protocol (MCP)**, the agent exposes its resources (Specs, Vision, Genome) as standardized protocols. This allows any external "Brain" (LLM) to interface with the local "Body" (Filesystem) through a secure, audited, and stateful umbilical cord.
+#### **A. Canonical PublicID Grammar**
+Visibility refers to Go symbol export status, not package import accessibility.
+* **Grammar:** `<visibility>.<package_path>.<receiver_optional>.<symbol_name>`
+* **Visibility Enum:** `pub` (Exported) | `priv` (Unexported).
+* **Receiver Logic:** Pointer and Value receivers normalize to the base type name.
+* **Generics Logic:** Parameters are normalized to positional placeholders `T1`, `T2`, etc., to resist drift from renaming.
 
-> **"We are not building a generator; we are building a specialized surgeon that respects the laws of physics and the sanctity of intent."**
+**Normative Examples:**
+* `pub.internal/scanner.ScanFile` (Free Function)
+* `pub.internal/scanner.Scanner.VerifyNode` (Method)
+* `pub.internal/model.Node` (Struct Type)
+* `priv.internal/model.registry` (Internal Var/Type)
+
+#### **B. Fingerprint Normalization**
+Fingerprint extraction requires **`go/types` resolution** for absolute canonicalization.
+1.  **Strip Parameter Names:** Preserves types only.
+2.  **Fully Qualified Types:** All types resolved to their full import path.
+3.  **Positional Returns:** Named returns are ignored; only types and order are preserved.
+
+#### **C. Logic Hash Canonicalization**
+Logic Hash is a SHA-256 of a **Custom Canonical Serialization** of the `ast.BlockStmt`.
+1.  **Normalize AST:** Strip all comments/formatting.
+2.  **Remap Locals:** Local variables remapped to stable sequence `v1`, `v2`, `...`.
+3.  **Hash:** Serialization of the resulting IR, ensuring stability across Go compiler versions.
+
+### **1.4. The MCP Sovereign: Authority & Transactions**
+* **Request-Only:** MCP Clients (LLMs) cannot write to disk; they submit **Mutation Requests**.
+* **Transaction Controller:** Only one node may undergo surgery at a time per package. Read access and test execution may be concurrent, but writes are serialized.
+* **The Audit Log:** Every tool call records the **Mutation Quad** (Patch, Audit Logs, Hash Diff, and Model Metadata).
+
+### **Implementation Target: `internal/identity`**
+
+Following your recommended build order, we now initiate the `internal/identity` package. This package is the root of the entire system.
+
+#### **The Identity Contract**
+| Function | Rule |
+| :--- | :--- |
+| `BuildPublicID` | Determines `pub`/`priv` via `unicode.IsUpper` of the first rune. |
+| `NormalizeReceiver` | Strips `*` and `&` to ensure pointer/value methods target the same node identity. |
+| `CanonicalizeGenerics` | Remaps `[A, B]` or `[T, K]` to `[T1, T2]`. |
+| `String()` | Produces the normative dot-delimited ID. |
+
+**"The machine-checkable laws are set, sir. I am initializing `internal/identity.go`. Shall I provide the first draft of the construction and normalization logic?"**
 
 ## **2. Architectural Anatomy (The Infrastructure)**
 
