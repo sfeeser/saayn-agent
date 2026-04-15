@@ -47,18 +47,51 @@ To stretch the Canvas (State 2), SAAYN routes the `specbook.yaml` to a FAST LLM.
 Once the Canvas is dropped to disk, the local SAAYN Agent uses `dave/dst` (Decorated Syntax Tree) to walk the files. It extracts the physics of the code (preserving human comments) and writes the absolute truth to `genome.json`.
 
 ```json
-"nodes": {
-  "00b1435f-bc84-465d-b011-c31b15623e12": {
-    "uuid": "00b1435f-bc84-465d-b011-c31b15623e12",
-    "public_id": "worker.ProcessPayment[worker.go]",
-    "node_type": "function",
-    
-    // --- THE V6 GENESIS ENGINE FIELDS ---
-    "genesis_state": 4,          
-    "fingerprint": "func(ctx context.Context, order *Order) error", 
-    "gene": "Executes transaction against Stripe API. Must be idempotent with exponential backoff on 5xx errors.",
-    "logic_hash": "e3b0c442...",  
-    "dependencies": ["worker.Storage", "metrics.Log"] 
+{
+  "project_metadata": {
+    "project_name": "SAAYN-Agent",
+    "version": "1.0.0",
+    "logic_engine": "saayn-v5-ast",
+    "total_nodes": 175,
+    "last_sequence_hash": "sha256:7f8e9a..."
+  },
+  "nodes": {
+    "pkg.internal.scanner.ScanFile": {
+      "uuid": "node-scn-001",
+      "public_id": "scanner.ScanFile[scanner.go]",
+      "uip": "internal/scanner.ScanFile",
+      
+      // --- GENESIS STATE MACHINE ---
+      // genesis_state: 1 | 2 | 3 | 4
+      "genesis_state": 4, 
+      
+      // maturity: "conceptual" | "hollow" | "anchored" | "sequenced"
+      "maturity": "sequenced", 
+      
+      // --- THE IDENTITY TRIAD ---
+      "fingerprint": "func(filePath string) ([]model.Node, error)",
+      "logic_hash": "sha256:a1b2c3d4e5f6...", // Set only when state == 4
+      "linked_spec_uuid": "spec-pkg-scn-001",
+
+      // --- GENOMIC CONTENT ---
+      "gene": "Recursively parses Go files into AST nodes. Excludes whitespace/comments from hash. Must handle symlinks.",
+      "business_purpose": "The primary sensory organ for identifying code identity and logic drift.",
+      
+      // --- DEPENDENCY GRAPH ---
+      "dependencies": [
+        "pkg.internal.model.Node",
+        "pkg.internal.astutil.CalculateHash"
+      ],
+      
+      // --- RECONCILIATION DATA ---
+      "last_audit": {
+        "timestamp": "2026-04-15T07:34:52Z",
+        "physics_pass": true,
+        "behavioral_pass": true,
+        "cognitive_score": 0.98,
+        "last_remediation_count": 1
+      }
+    }
   }
 }
 ```
